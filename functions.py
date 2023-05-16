@@ -15,10 +15,6 @@ from tkinter import filedialog as fd
 import re
 import nltk
 
-
-# In[ ]:
-
-
 # function which lets a user select a ui log from their computer's file structure
 def import_log():
     # create the root window
@@ -50,25 +46,11 @@ def import_log():
 
     return log, file_path
 
-
-# ## Preprocessing
-
-# ### Task Separation: Creating Case IDs
-
-# In[ ]:
-
-
 def delete_cases(log):
     if 'case' in log.columns[0]:
         log = log.drop(log.columns[0], axis=1)
 
     return log
-
-
-# ### Unify String Format - Split Camel Case & co.
-
-# In[ ]:
-
 
 # function to remove camel case and underscore writing
 def unify_string_format(log):
@@ -96,10 +78,6 @@ def unify_string_format(log):
 
     return log
 
-
-# In[ ]:
-
-
 # split column names written in camel case into separate words
 def split_title_camel_case(log):
     # create dictionary to store the column names in
@@ -120,12 +98,6 @@ def split_title_camel_case(log):
 
     return log
 
-
-# ### Removing Useless Data
-
-# In[ ]:
-
-
 # function to delete all empty columns
 def delete_empty_columns_and_rows(log):
     current_number_cols = len(log.columns)
@@ -139,10 +111,6 @@ def delete_empty_columns_and_rows(log):
 
     return log
 
-
-# In[ ]:
-
-
 # function removing all columns that include the same value in every row and therefore do not add value to the log
 def find_constant_columns(log):
     # constant_columns = [col for col in log.columns if log[col].nunique(dropna=True) == 1]
@@ -154,10 +122,6 @@ def find_constant_columns(log):
             constant_columns.append(col_index)
 
     return constant_columns
-
-
-# In[ ]:
-
 
 # function removing duplicate columns
 def remove_duplicate_columns(log):
@@ -171,10 +135,6 @@ def remove_duplicate_columns(log):
 
     return log
 
-
-# In[ ]:
-
-
 def get_unique_values_per_col(log):
     # dictionary to save the unique values of each column
     unique_dictionary = {}
@@ -187,22 +147,12 @@ def get_unique_values_per_col(log):
 
     return unique_dictionary
 
-
-# ## 1. Activity Extraction
-
-# In[ ]:
-
-
 # function to move a column to a different position in the log
 def move_column(log, current_column_name, column_index_goal, new_column_name):
     column = log.pop(current_column_name)
     log.insert(column_index_goal, new_column_name, column)
 
     return log
-
-
-# In[ ]:
-
 
 # recognize the event column of the log
 def find_event_column(log, ratio_dictionary, action_labels, ratio_threshold):
@@ -257,10 +207,7 @@ def find_event_column(log, ratio_dictionary, action_labels, ratio_threshold):
                 continue
     return log
 
-
-# In[ ]:
-
-
+# Todo: POS tagging or list comparison to separate activity and object type
 # function splitting the events into their activities and object types
 def extract_activity(log, event_column_index):
     # rename column
@@ -277,9 +224,6 @@ def extract_activity(log, event_column_index):
         log.insert(1, 'activity', split_results[0])
         log.insert(2, 'main ui object type', split_results[1])
 
-    # if there are more than two words, POS is needed to assign the values correctly
-    # else:
-
     # drop the original event_column
     log = log.drop('event', axis=1)
 
@@ -288,12 +232,6 @@ def extract_activity(log, event_column_index):
     log = delete_empty_columns_and_rows(log)
 
     return log
-
-
-# ## 2. Object Type & Attribute Type Detection
-
-# In[ ]:
-
 
 # function to find object and attribute types included in the log's headers
 def find_element_types_in_headers(log, synonym_dictionary):
@@ -310,10 +248,6 @@ def find_element_types_in_headers(log, synonym_dictionary):
 
     return header_element_types
 
-
-# In[ ]:
-
-
 # function finding columns that have 'user' in their title 
 def find_user_related_cols(log):
     user_columns = []
@@ -326,10 +260,6 @@ def find_user_related_cols(log):
                 user_columns.append(index)
 
     return user_columns
-
-
-# In[ ]:
-
 
 # function to count how many unique values there are per column and calculate a ratio (
 # unique_values/total_number_of_values)
@@ -345,10 +275,6 @@ def get_unique_value_ratio(log):
         print('%s: %d / %d = %f' % (column, number_unique_values, number_values, ratio_unique))
 
     return ratio_dictionary
-
-
-# In[ ]:
-
 
 # function to determine the completeness of the log per column and save columns passing the threshold in a dictionary
 def get_column_completeness(log, threshold_compl):
@@ -366,10 +292,6 @@ def get_column_completeness(log, threshold_compl):
 
     return col_compl_dict
 
-
-# In[ ]:
-
-
 def get_obj_type_based_on_att(header_att_types, att_to_obj_dict):
     # dictionary to save the column indices and the object type according to the matched attribute type
     header_obj_type_from_att_type = {}
@@ -384,10 +306,6 @@ def get_obj_type_based_on_att(header_att_types, att_to_obj_dict):
                     header_obj_type_from_att_type[key1].append(key2)
 
     return header_obj_type_from_att_type
-
-
-# In[ ]:
-
 
 # function to identify the element types the columns include
 def find_element_types(log, ratio_threshold, ratio_dictionary, comparison_dictionary, element_type_dictionary=None):
@@ -423,10 +341,6 @@ def find_element_types(log, ratio_threshold, ratio_dictionary, comparison_dictio
 
     return match_count_dictionary, element_type_dictionary
 
-
-# In[ ]:
-
-
 # function to recognize elements that follow a certain structure, e.g., email addresses or urls
 def check_for_regex(log, regex):
     # create a dictionary to store the count of matches per column and object type
@@ -450,19 +364,11 @@ def check_for_regex(log, regex):
 
     return match_count_dictionary
 
-
-# In[ ]:
-
-
 def categorize_col_as_att(dictionary, column_type_dictionary):
     for key in dictionary:
         column_type_dictionary.setdefault(key, 'attribute')
 
     return column_type_dictionary
-
-
-# In[ ]:
-
 
 def rearrange_col_type_dicts(header_obj_types, header_obj_type_from_att_type, column_indices):
     # dictionary including attribute columns where the object type is already known
@@ -484,10 +390,6 @@ def rearrange_col_type_dicts(header_obj_types, header_obj_type_from_att_type, co
 
     return ui_obj_att_cols, column_indices, header_obj_type_from_att_type
 
-
-# In[ ]:
-
-
 def get_potential_process_obj_cols(cont_att_cols, url_match_count_dictionary):
     # dictionary with column indices potentially including process object types
     pot_process_obj_cols = []
@@ -501,10 +403,6 @@ def get_potential_process_obj_cols(cont_att_cols, url_match_count_dictionary):
 
     return pot_process_obj_cols
 
-
-# In[ ]:
-
-
 def combine_ui_obj_type_dicts(ui_obj_att_cols, header_obj_type_from_att_type):
     # combine the ui object type dictionaries in one dictionary
     other_ui_obj_cols = {}
@@ -516,10 +414,6 @@ def combine_ui_obj_type_dicts(ui_obj_att_cols, header_obj_type_from_att_type):
         other_ui_obj_cols[key] = value if isinstance(value, list) else [value]
 
     return other_ui_obj_cols
-
-
-# In[ ]:
-
 
 def get_unmatched_att_cols(cont_att_cols, val_att_cols, ui_obj_att_cols, header_obj_type_from_att_type, user_cols):
     # columns including attribute types that are not associated with an object type yet
@@ -538,10 +432,6 @@ def get_unmatched_att_cols(cont_att_cols, val_att_cols, ui_obj_att_cols, header_
             unmatched_att_list.remove(index)
 
     return unmatched_att_list
-
-
-# In[ ]:
-
 
 def categorize_other_ui_obj(other_ui_obj_cols, object_hierarchy):
     # dictionaries to save other ui object types and their column indices according to their hierarchy level
@@ -571,10 +461,6 @@ def categorize_other_ui_obj(other_ui_obj_cols, object_hierarchy):
             undecided_obj_cols[index] = obj_types
 
     return other_ui_obj_cols_highest, other_ui_obj_cols_second, other_ui_obj_cols_third, other_ui_obj_cols_fourth, undecided_obj_cols
-
-
-# In[ ]:
-
 
 def get_column_types(log, column_type_dictionary, column_indices, col_compl_dict, ratio_dictionary, threshold_timestamp,
                      threshold_cont_att, threshold_val_att, ui_object_match_count_dictionary,
@@ -704,10 +590,6 @@ def get_column_types(log, column_type_dictionary, column_indices, col_compl_dict
 
     return column_type_dictionary
 
-
-# In[ ]:
-
-
 # function to rename the timestamp column
 def rename_timestamp_col(log, column_type_dictionary):
     for index in column_type_dictionary:
@@ -715,12 +597,6 @@ def rename_timestamp_col(log, column_type_dictionary):
             log = log.rename(columns={log.columns[index]: 'timestamp'})
 
     return log
-
-
-# ## 3. Attribute Type to Object Type Mapping
-
-# In[ ]:
-
 
 # function to save the column indices of the different element types
 def save_col_index_of_col_types(column_type_dictionary):
@@ -759,41 +635,6 @@ def save_col_index_of_col_types(column_type_dictionary):
     selected_cols.sort()
 
     return selected_cols, cont_att_cols, val_att_cols, obj_type_cols, main_obj_type_cols
-
-
-# In[ ]:
-
-
-# def map_a2o(log, selected_cols, cont_att_cols, val_att_cols, main_obj_type_cols):
-
-#     # dictionary to save object types and attribute types belonging to them
-#     att_to_obj_map = {}
-
-
-#     for index, row in log.iloc[:, selected_cols].iterrows():
-#         att_list = []
-#         for col_name, value in row.iteritems():
-#             col_index = log.columns.get_loc(col_name)
-#             if col_index in main_obj_type_cols and str(value).lower() != 'nan':
-#                 object_type = value
-#             if col_index in val_att_cols and str(value).lower() != 'nan':
-#                 att_list.append(col_name)
-#             if col_index in cont_att_cols and str(value).lower() != 'nan':
-#                 att_list.append(col_name)
-
-#         if object_type in att_to_obj_map:
-#             for att_type in att_list:
-#                 if att_type not in att_to_obj_map[object_type]:
-#                     att_to_obj_map[object_type].append(att_type)             
-#         att_to_obj_map.setdefault(object_type, att_list)
-
-#     return att_to_obj_map
-
-
-# ## 4. Object Instance Extraction and Object Hierarchy Identification
-
-# In[ ]:
-
 
 def identify_obj_inst_and_hrchy(log, selected_cols, val_att_cols, cont_att_cols, obj_type_cols,
                                 ui_object_type_dictionary, obj_highest_level, obj_second_level, obj_third_level,
@@ -888,10 +729,6 @@ def identify_obj_inst_and_hrchy(log, selected_cols, val_att_cols, cont_att_cols,
 
     return log
 
-
-# In[ ]:
-
-
 # find process object types in the log; only the context attribute columns are interesting here 
 def find_process_objects(log, cont_att_cols, nouns):
     # regex that recognized camel case
@@ -925,5 +762,3 @@ def find_process_objects(log, cont_att_cols, nouns):
             process_obj_dict.setdefault(index, process_obj_list)
 
     return process_obj_dict
-
-# In[ ]:
