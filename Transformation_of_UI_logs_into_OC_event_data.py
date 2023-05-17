@@ -293,6 +293,23 @@ def find_lowest_value(dictionary):
 
     return min_obj
 
+
+def check_value_availability(log, dictionary, row_index):
+
+    # dictionary to save object types that have existing attribute values and their column index
+    available_obj = {}
+
+    for obj_type, col_indices in dictionary.items():
+        col_index_list = []
+        for col_index in col_indices:
+            if str(log.iloc[row_index][col_index]).lower != 'nan':
+                col_index_list.append(col_index)
+
+        if col_index_list:
+            available_obj.setdefault(obj_type, col_index_list)
+
+    return available_obj
+
 def get_attribute_values(log, row_index, combined_att_list, val_att_cols, cont_att_cols):
     # lists to save attributes
     att_list = []
@@ -318,11 +335,15 @@ def add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web
     # only add higher levels to the list, if there are already attributes in the list
     if att_list:
 
+        if obj_level == 'obj_highest_level':
+            if obj_is_main is None:
+                part_of = None
+
         if obj_level == 'obj_second_level' or obj_level == 'obj_third_level':
             # if list is not empty, append the object instance included in it
             if last_high_obj_inst:
                 att_list.append(last_high_obj_inst[0])
-                if part_of is None:
+                if obj_is_main is True:
                     log.loc[row_index, 'part of'] = last_high_obj_inst[0]
                 else:
                     part_of = last_high_obj_inst[0]
@@ -331,7 +352,7 @@ def add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web
             # if list is not empty, append the object instance included in it
             if last_second_obj_inst:
                 att_list.append(last_second_obj_inst[0])
-                if part_of is None:
+                if obj_is_main is True:
                     log.loc[row_index, 'part of'] = last_second_obj_inst[0]
                 else:
                     part_of = last_second_obj_inst[0]
@@ -341,21 +362,13 @@ def add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web
             if row_index == last_third_obj_inst[1]:
                 if last_high_obj_inst:
                     att_list.append(last_high_obj_inst[0])
-                    if part_of is None:
-                        log.loc[row_index, 'part of'] = last_high_obj_inst[0]
-                    else:
-                        part_of = last_high_obj_inst[0]
 
                 if last_second_obj_inst:
                     att_list.append(last_second_obj_inst[0])
-                    if part_of is None:
-                        log.loc[row_index, 'part of'] = last_second_obj_inst[0]
-                    else:
-                        part_of = last_second_obj_inst[0]
 
                 if last_third_obj_inst:
                     att_list.append(last_third_obj_inst[0])
-                    if part_of is None:
+                    if obj_is_main:
                         log.loc[row_index, 'part of'] = last_third_obj_inst[0]
                     else:
                         part_of = last_third_obj_inst[0]
@@ -364,12 +377,12 @@ def add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web
             else:
                 if last_web_inst:
                     att_list.append(last_web_inst[0])
-                    if part_of is None:
+                    if obj_is_main:
                         log.loc[row_index, 'part of'] = last_web_inst[0]
                     else:
                         part_of = last_web_inst[0]
 
-    if obj_is_main is not None:
+    if obj_is_main is True:
         return att_list, log
     else:
         return part_of, att_list, log
@@ -444,6 +457,8 @@ def identify_main_object_instances(log, object_instances_dict, row_index, value,
     # call function to get a list of the relevant attribute columns
     combined_att_list, local_other_ui_obj_cols = get_relevant_att_cols(local_other_ui_obj_cols, unmatched_att_list,
                                                                        value_term)
+    # Todo: if no main given and higher level chosen as main, unassigned columns are added to the list even though they
+    #  don't fit the object type -> should I rather introduce 'unknown' as main?
 
     # function that loops over the list to combine all attribute values to identify the object instance
     att_list = get_attribute_values(log, row_index, combined_att_list, val_att_cols, cont_att_cols)
@@ -497,11 +512,18 @@ def identify_other_obj_inst(log, object_hierarchy, other_ui_obj_df, object_insta
             other_ui_obj_df = create_new_row(row_index, obj_inst, part_of, other_ui_obj_df)
 
         # if the main ui object is not on the same level, then set this object instance as last instance of this level
-        if main_not_this_level:
+        if main_not_this_level is True and obj_inst is not None:
             if obj == 'website':
                 last_web_inst = [obj_inst, row_index]
             else:
                 last_obj_inst = [obj_inst, row_index]
+
+        # on the highest level the last values of both types have to be saved
+        if obj_level == 'obj_highest_level':
+            if value == 'website' and obj != value:
+                last_obj_inst = [obj_inst, row_index]
+            if value == 'application' and obj != value:
+                last_web_inst = [obj_inst, row_index]
 
     return log, obj_counter, object_instances_dict, last_obj_inst, last_web_inst, other_ui_obj_df, part_of
 
@@ -698,8 +720,13 @@ for row_index, value in log['main ui object type'].iteritems():
         # call function to find out which columns have the same object type
         local_other_ui_obj_cols_highest_matched = find_matching_pairs(local_other_ui_obj_cols_highest)
 
+        # Todo: check if 2nd or 3rd level available to decide on highest level object
+
+        # check which object type of the highest level is present in this row
+        available_obj_high = check_value_availability(log, local_other_ui_obj_cols_highest_matched, row_index)
+
         # use ui object from highest level with lowest index as replacement
-        value = find_lowest_value(local_other_ui_obj_cols_highest_matched)
+        value = find_lowest_value(available_obj_high)
 
         # initialize value_term for the case that the value is not part of the ui_object_synonym
         value_term = value

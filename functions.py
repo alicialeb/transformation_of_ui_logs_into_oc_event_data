@@ -129,6 +129,14 @@ def remove_duplicate_columns(log):
 
     return log
 
+def isNaN(value):
+    try:
+        import math
+        return math.isnan(float(value))
+    except:
+        return False
+
+# Todo: figure out how to filter nan values
 def get_unique_values_per_col(log):
     # dictionary to save the unique values of each column
     unique_dictionary = {}
@@ -136,7 +144,7 @@ def get_unique_values_per_col(log):
     # save unique values 
     for col in log:
         unique_list = log[col].unique()
-        unique_list = [value for value in unique_list if str(value) != np.nan]
+        unique_list = [value for value in unique_list if str(value).lower != 'nan']
         unique_dictionary[col] = unique_list
 
     return unique_dictionary
@@ -650,9 +658,9 @@ def identify_obj_inst_and_hrchy(log, selected_cols, val_att_cols, cont_att_cols,
     obj_counter = 0
 
     # create variables to hold the last seen object instance of each object hierarchy
-    last_high_obj_inst = np.nan
-    last_second_obj_inst = np.nan
-    last_third_obj_inst = np.nan
+    #last_high_obj_inst = np.nan
+   # last_second_obj_inst = np.nan
+    #last_third_obj_inst = np.nan
 
     # loop over selected columns only
     for index, row in log.iloc[:, selected_cols].iterrows():
