@@ -2,12 +2,6 @@
 # coding: utf-8
 
 # # Functions needed for the UI log transformation
-
-# ## Imports
-
-# In[1]:
-
-
 import pandas as pd
 import numpy as np
 import tkinter as tk
