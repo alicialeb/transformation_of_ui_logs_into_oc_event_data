@@ -34,7 +34,7 @@ nouns = pd.read_csv(r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\
 threshold_ui_obj = 0.15
 threshold_act = 0.2
 threshold_cont_att = 0.5
-threshold_val_att = 0.5
+threshold_val_att = 1 - threshold_cont_att
 threshold_timestamp = 1
 threshold_compl = 0.95
 
@@ -78,7 +78,8 @@ ui_object_synonym = {
     'sheet': ['sheet', 'page'],
     'field': ['field', 'cell', 'value'],
     'button': ['button'],
-    'image': ['image', 'picture']
+    'image': ['image', 'picture'],
+    'checkbox': ['checkbox', 'check box']
 }
 
 # dictionary with pre-defined attribute types and their synonyms
@@ -108,7 +109,6 @@ att_to_obj_dict = {
     'image': ['label']
 }
 
-# ### Ratio Dictionary
 # call function to calculate the ratio again of unique values/total values per column
 ratio_dictionary = get_unique_value_ratio(log)
 
@@ -130,17 +130,17 @@ user_cols = find_user_related_cols(log)
 header_obj_types = find_element_types_in_headers(log, ui_object_synonym)
 header_att_types = find_element_types_in_headers(log, attribute_synonym)
 
-# call function to save the column indices and the object type according to the matched attribute type in a dictionary
-header_obj_type_from_att_type = get_obj_type_based_on_att(header_att_types, att_to_obj_dict)
-
 # dictionary that holds info on type included for each column of the log
 column_type_dictionary = {}
 
-# categorize columns from dictionary as attribute columns 
-column_type_dictionary = categorize_col_as_att(header_obj_type_from_att_type, column_type_dictionary)
+# categorize columns from dictionary as attribute columns
+column_type_dictionary = categorize_col_as_att(header_att_types, column_type_dictionary)
 
 # mark user columns as attribute columns
 column_type_dictionary = categorize_col_as_att(user_cols, column_type_dictionary)
+
+# call function to save the column indices and the object type according to the matched attribute type in a dictionary
+header_obj_type_from_att_type = get_obj_type_based_on_att(header_att_types, att_to_obj_dict)
 
 # call function to re-arrange the dictionaries including info on the column type
 ui_obj_att_cols, column_indices, header_obj_type_from_att_type = rearrange_col_type_dicts(header_obj_types,
@@ -203,7 +203,7 @@ object_hierarchy = {
     'obj_highest_level': ['website', 'application'],
     'obj_second_level': ['file'],
     'obj_third_level': ['sheet'],
-    'obj_fourth_level': ['field', 'button', 'image']
+    'obj_fourth_level': ['field', 'button', 'image', 'checkbox']
 }
 
 # object hierarchy levels; the next level below website is level 4
@@ -310,37 +310,66 @@ def get_attribute_values(log, row_index, combined_att_list, val_att_cols, cont_a
 
     return att_list
 
-# Todo: if level 3 available in same row, then assign application to fourth level, else website; if both given
+
 def add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web_inst, last_high_obj_inst, last_second_obj_inst,
                                    last_third_obj_inst, part_of=None):
+
     if obj_level == 'obj_second_level' or obj_level == 'obj_third_level':
-        if str(last_high_obj_inst).lower() != 'nan' and last_high_obj_inst != np.nan:
-            att_list.append(last_high_obj_inst)
+        # if list is not empty, append the object instance included in it
+        if last_high_obj_inst:
+            att_list.append(last_high_obj_inst[0])
             if part_of is None:
-                log.loc[row_index, 'part of'] = last_high_obj_inst
+                log.loc[row_index, 'part of'] = last_high_obj_inst[0]
             else:
-                part_of = last_high_obj_inst
+                part_of = last_high_obj_inst[0]
 
     if obj_level == 'obj_third_level':
-        if str(last_second_obj_inst).lower() != 'nan' and last_second_obj_inst != np.nan:
-            att_list.append(last_second_obj_inst)
+        # if list is not empty, append the object instance included in it
+        if last_second_obj_inst:
+            att_list.append(last_second_obj_inst[0])
             if part_of is None:
-                log.loc[row_index, 'part of'] = last_second_obj_inst
+                log.loc[row_index, 'part of'] = last_second_obj_inst[0]
             else:
-                part_of = last_second_obj_inst
+                part_of = last_second_obj_inst[0]
 
     if obj_level == 'obj_fourth_level':
-        if str(last_third_obj_inst).lower() != 'nan' and last_third_obj_inst != np.nan:
-            att_list.append(last_third_obj_inst)
-            if part_of is None:
-                log.loc[row_index, 'part of'] = last_third_obj_inst
-            else:
-                part_of = last_third_obj_inst
+        # if in same row an object instance of third level exists, then have application as first level
+        if row_index == last_third_obj_inst[1]:
+            if last_high_obj_inst:
+                att_list.append(last_high_obj_inst[0])
+                if part_of is None:
+                    log.loc[row_index, 'part of'] = last_high_obj_inst[0]
+                else:
+                    part_of = last_high_obj_inst[0]
+
+            if last_second_obj_inst:
+                att_list.append(last_second_obj_inst[0])
+                if part_of is None:
+                    log.loc[row_index, 'part of'] = last_second_obj_inst[0]
+                else:
+                    part_of = last_second_obj_inst[0]
+
+            if last_third_obj_inst:
+                att_list.append(last_third_obj_inst[0])
+                if part_of is None:
+                    log.loc[row_index, 'part of'] = last_third_obj_inst[0]
+                else:
+                    part_of = last_third_obj_inst[0]
+
+        # if no third level obj instance in same row, then have website as first level
+        else:
+            if last_web_inst:
+                att_list.append(last_web_inst[0])
+                if part_of is None:
+                    log.loc[row_index, 'part of'] = last_web_inst[0]
+                else:
+                    part_of = last_web_inst[0]
 
     if part_of is None:
         return att_list, log
     else:
         return part_of, att_list, log
+
 
 def get_relevant_att_cols(local_other_ui_obj_cols, unmatched_att_list, value_term):
     # list to collect relevant columns
@@ -421,7 +450,11 @@ def identify_main_object_instances(log, object_instances_dict, row_index, value,
     log.loc[row_index, 'object instance'] = obj_inst
 
     # saves instance of last object for this  hierarchy level
-    last_obj_inst = obj_inst
+    if value_term == 'website':
+        last_web_inst = [obj_inst, row_index]
+    else:
+        last_obj_inst = [obj_inst, row_index]
+
 
     return log, obj_counter, object_instances_dict, last_obj_inst, last_web_inst, local_other_ui_obj_cols
 
@@ -448,15 +481,17 @@ def identify_other_obj_inst(log, object_hierarchy, other_ui_obj_df, object_insta
         # call function to form a key from the attribute combination to get the object instance
         obj_inst, object_instances_dict, obj_counter = generate_key(att_list, object_instances_dict, obj, obj_counter)
 
-        # call function to add a row with new info to the other_ui_obj_df
-        other_ui_obj_df = create_new_row(row_index, obj_inst, part_of, other_ui_obj_df)
+        # don't add object instances to the df that don't actually exist
+        if obj_inst != np.nan:
+            # call function to add a row with new info to the other_ui_obj_df
+            other_ui_obj_df = create_new_row(row_index, obj_inst, part_of, other_ui_obj_df)
 
         # if the main ui object is not on the same level, then set this object instance as last instance of this level
         if main_not_this_level:
             if obj == 'website':
-                last_web_inst = obj_inst
+                last_web_inst = [obj_inst, row_index]
             else:
-                last_obj_inst = obj_inst
+                last_obj_inst = [obj_inst, row_index]
 
     return log, obj_counter, object_instances_dict, last_obj_inst, last_web_inst, other_ui_obj_df, part_of
 
@@ -469,12 +504,12 @@ other_ui_obj_df = pd.DataFrame(columns=['row_index', 'object_instance', 'part_of
 # variable to save to which higher instance an object instance belongs and fill last column of the other_ui_obj_df
 part_of = np.nan
 
-# create variables to hold the last seen object instance of each object hierarchy
-last_high_obj_inst = np.nan
-last_web_inst = np.nan
-last_second_obj_inst = np.nan
-last_third_obj_inst = np.nan
-last_fourth_obj_inst = np.nan
+# create lists to hold the last seen object instance of each object hierarchy and their row
+last_high_obj_inst = []
+last_web_inst = [] # for websites
+last_second_obj_inst = []
+last_third_obj_inst = []
+last_fourth_obj_inst = []
 
 # counter to assign ids to the object instances
 obj_counter = 0

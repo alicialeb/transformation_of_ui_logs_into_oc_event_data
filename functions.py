@@ -250,14 +250,14 @@ def find_element_types_in_headers(log, synonym_dictionary):
 
 # function finding columns that have 'user' in their title 
 def find_user_related_cols(log):
-    user_columns = []
+    user_columns = {}
 
     # loop over every word that is part of a header to find matches in the ui object type dictionary
     for index, header_word in enumerate(log.columns):
         words = header_word.split()
         for word in words:
             if word == 'user':
-                user_columns.append(index)
+                user_columns.setdefault(index, header_word)
 
     return user_columns
 
@@ -365,8 +365,14 @@ def check_for_regex(log, regex):
     return match_count_dictionary
 
 def categorize_col_as_att(dictionary, column_type_dictionary):
-    for key in dictionary:
-        column_type_dictionary.setdefault(key, 'attribute')
+
+    for key, value in dictionary.items():
+        if value == 'input value':
+            column_type_dictionary.setdefault(key, 'value attribute')
+        elif 'id' in value:
+            column_type_dictionary.setdefault(key, 'context attribute')
+        else:
+            column_type_dictionary.setdefault(key, 'attribute')
 
     return column_type_dictionary
 
@@ -415,6 +421,7 @@ def combine_ui_obj_type_dicts(ui_obj_att_cols, header_obj_type_from_att_type):
 
     return other_ui_obj_cols
 
+
 def get_unmatched_att_cols(cont_att_cols, val_att_cols, ui_obj_att_cols, header_obj_type_from_att_type, user_cols):
     # columns including attribute types that are not associated with an object type yet
     unmatched_att_list = cont_att_cols + val_att_cols
@@ -432,6 +439,7 @@ def get_unmatched_att_cols(cont_att_cols, val_att_cols, ui_obj_att_cols, header_
             unmatched_att_list.remove(index)
 
     return unmatched_att_list
+
 
 def categorize_other_ui_obj(other_ui_obj_cols, object_hierarchy):
     # dictionaries to save other ui object types and their column indices according to their hierarchy level
@@ -462,9 +470,11 @@ def categorize_other_ui_obj(other_ui_obj_cols, object_hierarchy):
 
     return other_ui_obj_cols_highest, other_ui_obj_cols_second, other_ui_obj_cols_third, other_ui_obj_cols_fourth, undecided_obj_cols
 
+
 def get_column_types(log, column_type_dictionary, column_indices, col_compl_dict, ratio_dictionary, threshold_timestamp,
                      threshold_cont_att, threshold_val_att, ui_object_match_count_dictionary,
                      timestamp_match_count_dictionary, url_match_count_dictionary, mail_match_count_dictionary):
+
     # there can only be one 'main ui object type' column holding the ui object interacted with; counter
     main_ui_obj_type_counter = 0
 
@@ -544,26 +554,24 @@ def get_column_types(log, column_type_dictionary, column_indices, col_compl_dict
                 # remove this index from the list because a type has been assigned
                 column_indices.remove(col)
 
-    # check whether the attribute columns are context or value attribute columns
+    # check whether the attribute columns are context or value attribute columns depending on the uniqueness of the values
     for col in column_type_dictionary:
         if column_type_dictionary[col] == 'attribute':
+            # if there are few unique values it is likely that the column includes context attribute values
             if ratio_dictionary[col] < threshold_cont_att:
                 column_type_dictionary[col] = 'context attribute'
-            # if there are many unique values it is likely that the column includes attribute values
+            # if there are many unique values it is likely that the column includes value attribute values
             elif ratio_dictionary[col] > threshold_val_att:
                 column_type_dictionary[col] = 'value attribute'
 
     # loop over columns no type has been assigned to yet
     for col in column_indices:
-
         # ids are usually context attributes even though they have a high uniqueness rate
         if 'id' in log.columns[col]:
             column_type_dictionary.setdefault(col, 'context attribute')
-
         # if there are few unique values it is likely that the column includes attribute types
         elif ratio_dictionary[col] < threshold_cont_att:
             column_type_dictionary.setdefault(col, 'context attribute')
-
         # if there are many unique values it is likely that the column includes attribute values
         elif ratio_dictionary[col] > threshold_val_att:
             column_type_dictionary.setdefault(col, 'value attribute')
@@ -575,7 +583,6 @@ def get_column_types(log, column_type_dictionary, column_indices, col_compl_dict
                 first_7_unique = log[log.columns[col]].unique()[:7].tolist()
                 print(f'Column: {log.columns[col]}: {first_7_unique} \nPossible column types: {possible_values}')
                 column_type = input("Please enter the type of this column choosing from this list:")
-
                 if column_type not in possible_values:
                     print("Column type invalid. Please try again.")
                     # return to the start of the loop
@@ -585,10 +592,11 @@ def get_column_types(log, column_type_dictionary, column_indices, col_compl_dict
                     # exit the loop
                     break
 
-                    # sort the dictionary, so the columns are in the right order
+    # sort the dictionary, so the columns are in the right order
     column_type_dictionary = dict(sorted(column_type_dictionary.items()))
 
     return column_type_dictionary
+
 
 # function to rename the timestamp column
 def rename_timestamp_col(log, column_type_dictionary):
@@ -597,6 +605,7 @@ def rename_timestamp_col(log, column_type_dictionary):
             log = log.rename(columns={log.columns[index]: 'timestamp'})
 
     return log
+
 
 # function to save the column indices of the different element types
 def save_col_index_of_col_types(column_type_dictionary):
@@ -635,6 +644,7 @@ def save_col_index_of_col_types(column_type_dictionary):
     selected_cols.sort()
 
     return selected_cols, cont_att_cols, val_att_cols, obj_type_cols, main_obj_type_cols
+
 
 def identify_obj_inst_and_hrchy(log, selected_cols, val_att_cols, cont_att_cols, obj_type_cols,
                                 ui_object_type_dictionary, obj_highest_level, obj_second_level, obj_third_level,
@@ -685,7 +695,7 @@ def identify_obj_inst_and_hrchy(log, selected_cols, val_att_cols, cont_att_cols,
         if object_type in ui_object_type_dictionary and ui_object_type_dictionary[object_type] in obj_third_level:
             if str(last_second_obj_inst).lower() != 'nan':
                 att_list.append(last_second_obj_inst)
-        # add third level object instance to the list (for all fourth level objects)   
+        # add third level object instance to the list (for all fourth level objects)
         if object_type in ui_object_type_dictionary and ui_object_type_dictionary[object_type] in obj_fourth_level:
             if str(last_third_obj_inst).lower() != 'nan':
                 att_list.append(last_third_obj_inst)
@@ -728,6 +738,7 @@ def identify_obj_inst_and_hrchy(log, selected_cols, val_att_cols, cont_att_cols,
             log.loc[index, 'part of'] = last_high_obj_inst
 
     return log
+
 
 # find process object types in the log; only the context attribute columns are interesting here 
 def find_process_objects(log, cont_att_cols, nouns):
