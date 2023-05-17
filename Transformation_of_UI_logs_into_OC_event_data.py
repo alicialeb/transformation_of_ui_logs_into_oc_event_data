@@ -180,6 +180,9 @@ column_type_dictionary = get_column_types(log, column_type_dictionary, column_in
 # call function to rename the timestamp column
 log = rename_timestamp_col(log, column_type_dictionary)
 
+# make sure NaN values are proper NaNs and not casted to strings
+log.replace('nan', np.NaN, inplace=True)
+
 # ### Complete Element Type Dictionaries
 # call function to get unique values per column
 unique_dictionary = get_unique_values_per_col(log)
@@ -302,7 +305,7 @@ def check_value_availability(log, dictionary, row_index):
     for obj_type, col_indices in dictionary.items():
         col_index_list = []
         for col_index in col_indices:
-            if str(log.iloc[row_index][col_index]).lower != 'nan':
+            if log.iloc[row_index][col_index] is not np.NaN:
                 col_index_list.append(col_index)
 
         if col_index_list:
@@ -319,12 +322,14 @@ def get_attribute_values(log, row_index, combined_att_list, val_att_cols, cont_a
     for col_index in combined_att_list:
 
         # for the value attribute columns, save the column title in the list
-        if col_index in val_att_cols and str(log.iloc[row_index, col_index]).lower() != 'nan':
-            att_list.append(log.columns[col_index])
+        cell_value = log.iloc[row_index, col_index]
 
         # for the context attribute columns save the column value in the list
-        if col_index in cont_att_cols and str(log.iloc[row_index, col_index]).lower() != 'nan':
+        if col_index in cont_att_cols and cell_value is not np.NaN:
             att_list.append(log.iloc[row_index, col_index])
+
+        elif col_index in val_att_cols and cell_value is not np.NaN:
+            att_list.append(log.columns[col_index])
 
     return att_list
 
@@ -421,7 +426,7 @@ def generate_key(att_list, object_instances_dict, value, obj_counter):
 
     elif len(att_list) == 1:
         att_val = att_list[0]
-        if att_val not in object_instances_dict and str(att_val).lower() != 'nan':
+        if att_val not in object_instances_dict and att_val is not np.NaN:
             obj_counter += 1
             object_instances_dict.setdefault(att_val, f'{value}_{obj_counter}')
         obj_inst = object_instances_dict[att_val]
@@ -556,7 +561,7 @@ for row_index, value in log['main ui object type'].iteritems():
     local_other_ui_obj_cols_fourth = copy.deepcopy(other_ui_obj_cols_fourth)
 
     # if the value is given for this row, use it as the main object type
-    if str(value).lower() != 'nan':
+    if value is not np.NaN:
 
         # initialize value_term for the case that the value is not part of the ui_object_synonym
         value_term = value
@@ -814,7 +819,7 @@ event_df['timestamp'] = event_df['timestamp'].astype(str)
 for index, row in event_df.iterrows():
     val_att_dict = {}
     for att in val_att_list:
-        if str(row[att]).lower() != 'nan':
+        if att is not np.NaN:
             val_att_dict[f"{row['object instance']}.{att}"] = row[att]
 
     events_dict[row["event id"]] = {
@@ -851,13 +856,13 @@ for index, row in object_df.iterrows():
     part_of = []
 
     for att in cont_att_list:
-        if str(row[att]).lower() != 'nan':
+        if att is not np.NaN:
             cont_att_dict[att] = row[att]
     for att in val_att_list:
-        if str(row[att]).lower() != 'nan':
+        if att is not np.NaN:
             val_att_dict[att] = row[att]
 
-    if str(row["part of"]).lower() != 'nan':
+    if row["part of"] is not np.NaN:
         part_of.append(row["part of"])
 
     objects_dict[row["object instance"]] = {

@@ -62,7 +62,7 @@ def unify_string_format(log):
             if re.fullmatch(string_regex, str(value).strip()):
                 value = str(value).strip()
 
-                if str(value).lower() == 'nan':
+                if value is np.NaN:
                     break
 
                 else:
@@ -129,14 +129,7 @@ def remove_duplicate_columns(log):
 
     return log
 
-def isNaN(value):
-    try:
-        import math
-        return math.isnan(float(value))
-    except:
-        return False
 
-# Todo: figure out how to filter nan values
 def get_unique_values_per_col(log):
     # dictionary to save the unique values of each column
     unique_dictionary = {}
@@ -144,7 +137,7 @@ def get_unique_values_per_col(log):
     # save unique values 
     for col in log:
         unique_list = log[col].unique()
-        unique_list = [value for value in unique_list if str(value).lower != 'nan']
+        unique_list = [value for value in unique_list if value is not np.NaN]
         unique_dictionary[col] = unique_list
 
     return unique_dictionary
@@ -674,32 +667,32 @@ def identify_obj_inst_and_hrchy(log, selected_cols, val_att_cols, cont_att_cols,
         for col_name, value in row.iteritems():
             col_index = log.columns.get_loc(col_name)
             # save object type
-            if 'main ui object type' in col_name and str(value).lower() != 'nan':
+            if 'main ui object type' in col_name and value is not np.NaN:
                 object_type = value
             # for the value attribute columns, save the column title in the list
-            if col_index in val_att_cols and str(value).lower() != 'nan':
+            if col_index in val_att_cols and value is not np.NaN:
                 att_list.append(col_name)
                 att_val_combi_list.append(value)
             # for the context attribute columns save the column value in the list
-            if col_index in cont_att_cols and str(value).lower() != 'nan':
+            if col_index in cont_att_cols and value is not np.NaN:
                 att_list.append(value)
                 att_val_combi_list.append(value)
                 # list additional ui object types
-            if col_index in obj_type_cols and str(value).lower() != 'nan':
+            if col_index in obj_type_cols and value is not np.NaN:
                 ui_obj_list.append(value)
 
         # depending on the hierarchy level: add more values to the list to identify object instances
         # add highest level object instance to list (for all but highest level objects)
         if object_type in ui_object_type_dictionary and ui_object_type_dictionary[object_type] not in obj_highest_level:
-            if str(last_high_obj_inst).lower() != 'nan':
+            if last_high_obj_inst is not np.NaN:
                 att_list.append(last_high_obj_inst)
         # add second level object instance to the list (for all third level objects)
         if object_type in ui_object_type_dictionary and ui_object_type_dictionary[object_type] in obj_third_level:
-            if str(last_second_obj_inst).lower() != 'nan':
+            if last_second_obj_inst is not np.NaN:
                 att_list.append(last_second_obj_inst)
         # add third level object instance to the list (for all fourth level objects)
         if object_type in ui_object_type_dictionary and ui_object_type_dictionary[object_type] in obj_fourth_level:
-            if str(last_third_obj_inst).lower() != 'nan':
+            if last_third_obj_inst is not np.NaN:
                 att_list.append(last_third_obj_inst)
 
         # transform lists in tuples, so they can act as keys in the dictionary
@@ -725,14 +718,14 @@ def identify_obj_inst_and_hrchy(log, selected_cols, val_att_cols, cont_att_cols,
             log.loc[index, 'part of'] = last_high_obj_inst
         elif object_type in ui_object_type_dictionary and ui_object_type_dictionary[object_type] in obj_third_level:
             last_third_obj_inst = obj_inst
-            if str(last_second_obj_inst).lower() != 'nan':
+            if last_second_obj_inst is not np.NaN:
                 log.loc[index, 'part of'] = last_second_obj_inst
             else:
                 log.loc[index, 'part of'] = last_high_obj_inst
         elif object_type in ui_object_type_dictionary and ui_object_type_dictionary[object_type] in obj_fourth_level:
-            if str(last_third_obj_inst).lower() != 'nan':
+            if last_third_obj_inst is not np.NaN:
                 log.loc[index, 'part of'] = last_third_obj_inst
-            elif str(last_second_obj_inst).lower() != 'nan':
+            elif last_second_obj_inst is not np.NaN:
                 log.loc[index, 'part of'] = last_second_obj_inst
             else:
                 log.loc[index, 'part of'] = last_high_obj_inst
@@ -758,7 +751,7 @@ def find_process_objects(log, cont_att_cols, nouns):
 
             # unify the string format first
             value = str(value).strip()
-            if str(value).lower() == 'nan':
+            if value is np.NaN:
                 break
             else:
                 term = [word for word in re.split(camel_underscore_regex, value)]
