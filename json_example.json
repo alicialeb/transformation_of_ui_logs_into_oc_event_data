@@ -1,0 +1,202 @@
+{
+  "uiObjects": {
+    "w1": {
+      "type": "website", 
+      "cmap": {
+        "url": "www.example.com"
+      },
+      "vmap": {},
+      "omap": []
+    },
+
+    "f1": {
+      "type": "field", 
+      "cmap": {
+        "label": "username"
+      },
+      "vmap": {
+        "inputValue": "Doja1988" 
+      },
+      "omap": ["w1"]
+    },
+
+    "f2": {
+      "type": "field", 
+      "cmap": {
+        "label": "password"
+      },
+      "vmap": {
+        "inputValue": "HJadaK278,o"
+      },
+      "omap": ["w1"]
+    },
+
+    "b1": {
+      "type": "button", 
+      "cmap": {
+        "label": "login"
+      },
+      "vmap": {},
+      "omap": ["w1"]
+    },
+    "w2": {
+      "type": "website", 
+      "cmap": {
+        "url": "www.website.com"
+      },
+      "vmap": {},
+      "omap": []
+    },
+    "f3": {
+      "type": "field", 
+      "cmap": {
+        "label": "username"
+      },
+      "vmap": {
+        "inputValue": "Hag_01"
+      },
+      "omap": ["w2"]
+    },
+
+    "f4": {
+      "type": "field", 
+      "cmap": {
+        "label": "password"
+      },
+      "vmap": {
+        "inputValue": "#HSkdljG_g"
+      },
+      "omap": ["w2"]
+    },
+
+    "b2": {
+      "type": "button", 
+      "cmap": {
+        "label": "confirm"
+      },
+      "vmap": {},
+      "omap": ["w2"]
+    }
+  },
+
+  "processObjects": {
+    "u1": {
+      "type": "user", 
+      "cmap": {
+        "name": "Yeo Evans",
+        "username": "Yeee123",
+        "password": "uih(jJHHL"
+      },
+      "vmap": {},
+      "omap": []
+    },
+
+    "u2": {
+      "type": "user", 
+      "cmap": {
+        "name": "Yawn Hagen",
+        "username": "Hag_01", 
+        "password": "#HSkdljG_g"
+      },
+      "vmap": {},
+      "omap": []
+    },
+
+    "u3": {
+      "type": "user", 
+      "cmap": {
+        "name": "Jane Doe",
+        "username": "Doja1988",
+        "password": "HJadaK278,o"
+      },
+      "vmap": {},
+      "omap": []
+    }
+  },
+
+  "events": {
+    "e1":{
+      "activity": "follow",
+      "timestamp": "2019-10-21T00:10:09.640Z",
+      "omap": ["w1", "u1"],
+      "vmap": {}
+    },
+
+    "e2":{
+      "activity": "insert",
+      "timestamp": "2019-10-21T00:10:12.216Z",
+      "omap": ["f1", "u1"],
+      "vmap": {"f1.inputValue": "Yeee123"}
+    },
+
+    "e3":{
+      "activity": "insert",
+      "timestamp": "2019-10-21T00:10:13.281Z",
+      "omap": ["f2", "u1"],
+      "vmap": {"f1.inputValue": "uih(jJHHL"}
+    },
+
+    "e4":{
+      "activity": "click",
+      "timestamp": "2019-10-21T00:10:16.269Z",
+      "omap": ["b1", "u1"],
+      "vmap": {}
+    },
+
+    "e5":{
+      "activity": "follow",
+      "timestamp": "2019-10-21T00:10:18.810Z",
+      "omap": ["w2", "u2"],
+      "vmap": {}
+    },
+
+    "e6":{
+      "activity": "insert",
+      "timestamp": "2019-10-21T00:10:19.161Z",
+      "omap": ["f3", "u2"],
+      "vmap": {"f1.inputValue": "Hag_01"}
+    },
+
+    "e7":{
+      "activity": "insert",
+      "timestamp": "2019-10-21T00:10:23.120Z",
+      "omap": ["f4", "u2"],
+      "vmap": {"f1.inputValue": "#HSkdljG_g"}
+    },
+
+    "e8":{
+      "activity": "click",
+      "timestamp": "2019-10-21T00:10:27.297Z",
+      "omap": ["b2", "u2"],
+      "vmap": {}
+    },
+
+    "e9":{
+      "activity": "follow",
+      "timestamp": "2019-10-21T00:10:31.091Z",
+      "omap": ["w1", "u3"],
+      "vmap": {}
+    },
+
+    "e10":{
+      "activity": "insert",
+      "timestamp": "2019-10-21T00:10:35.436Z",
+      "omap": ["f1", "u3"],
+      "vmap": {"f1.inputValue": "Doja1988"}
+    },
+
+    "e11":{
+      "activity": "insert",
+      "timestamp": "2019-10-21T00:10:38.416Z",
+      "omap": ["f2", "u3"],
+      "vmap": {"f1.inputValue": "HJadaK278,o"}
+    },
+    
+    "e12":{
+      "activity": "click",
+      "timestamp": "2019-10-21T00:10:45.633Z",
+      "omap": ["b1", "u3"],
+      "vmap": {}
+    }  
+  }
+}
