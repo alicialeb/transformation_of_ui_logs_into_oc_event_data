@@ -1,20 +1,17 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Automated Transformation of UI Logs Into Object-Centric Event Data
-
 # Assumptions: 
-# - log is sorted by the timestamp starting with the earliest point in time
+# - log is sorted by the timestamp starting with the earliest point in time.
 # - if the log is already split into cases, the case id is in the first column of the log.
+# - every UI log has some sort of event or activity column.
 
-# ## Imports
-
+# <editor-fold desc="Imports">
 import json
 import copy
-import numpy as np
-
 from functions import *
 
+# TODO: restructure code, so it can be run with one click and multiple different parameter settings
 # call the import_log function to read a ui log chosen by the user
 # log, file_path = import_log()
 
@@ -24,52 +21,16 @@ log = pd.read_csv(file_path)
 # file_path = r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\example_ui_log - Copy.xlsx'
 # log = pd.read_excel(file_path)
 
-# import action label list taken from https://carbondesignsystem.com/guidelines/content/action-labels/ and
+# import action label list as DataFrame taken from https://carbondesignsystem.com/guidelines/content/action-labels/ and
 # supplemented with own ideas (confirm, login)
 action_labels = pd.read_csv(r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\action_labels.csv')
 
-# import noun list extracted from wordNet
+# import noun list extracted from wordNet as DataFrame
 nouns = pd.read_csv(r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\nouns_final.csv')
+# </editor-fold>
 
-# ration thresholds to be optimized
-threshold_ui_obj = 0.15
-threshold_act = 0.2
-threshold_cont_att = 0.5
-threshold_val_att = 1 - threshold_cont_att
-threshold_timestamp = 1
-threshold_compl = 0.95
 
-# ## Preprocessing
-
-# ### Remove Useless Data
-
-# call function to delete case separation since it is not needed
-log = delete_cases(log)
-
-# call function to remove empty columns
-log = delete_empty_columns_and_rows(log)
-
-# call function to remove duplicate columns from the log
-log = remove_duplicate_columns(log)
-
-# ### Split Camel Case
-# call function to unify the string formats by eliminating e.g., camel case
-log = unify_string_format(log)
-
-# calling function to split column names written in camel case into separate words
-log = split_title_camel_case(log)
-
-# ## 1. Column Type Classification
-# call function to calculate the ratio of unique values/total values per column
-ratio_dictionary = get_unique_value_ratio(log)
-
-# call function to identify the event column of the ui log and move it to the first position 
-log = find_event_column(log, ratio_dictionary, action_labels, threshold_act)
-
-# calling the extract_activity function to separate the activities from the object types in the events
-log = extract_activity(log, 0)
-
-# ### Pre-define Dictionaries
+# <editor-fold desc="Pre-defined Dictionaries and Lists">
 # dictionary with pre-defined object types and their synonyms
 ui_object_synonym = {
     'website': ['website', 'site', 'page', 'web page', 'webpage', 'url', 'link', 'href', 'browser', 'chrome', 'firefox',
@@ -110,98 +71,6 @@ att_to_obj_dict = {
     'image': ['label']
 }
 
-# call function to calculate the ratio again of unique values/total values per column
-ratio_dictionary = get_unique_value_ratio(log)
-
-# call function to calculate the completeness ratio again per column
-col_compl_dict = get_column_completeness(log, threshold_compl)
-
-# ### Find Element Types
-# initialize list with all column indices
-num_columns = len(log.columns)
-column_indices = list(range(num_columns))
-
-# call function to find columns that are constant, so have the same value for all rows
-const_cols = find_constant_columns(log)
-
-# call function to find columns that belong to the user rather than to any ui object
-user_cols = find_user_related_cols(log)
-
-# call function to identify element types in the log's column headers
-header_obj_types = find_element_types_in_headers(log, ui_object_synonym)
-header_att_types = find_element_types_in_headers(log, attribute_synonym)
-
-# dictionary that holds info on type included for each column of the log
-column_type_dictionary = {}
-
-# categorize columns from dictionary as attribute columns
-column_type_dictionary = categorize_col_as_att(header_att_types, column_type_dictionary)
-
-# mark user columns as attribute columns
-column_type_dictionary = categorize_col_as_att(user_cols, column_type_dictionary)
-
-# call function to save the column indices and the object type according to the matched attribute type in a dictionary
-header_obj_type_from_att_type = get_obj_type_based_on_att(header_att_types, att_to_obj_dict)
-
-# call function to re-arrange the dictionaries including info on the column type
-ui_obj_att_cols, column_indices, header_obj_type_from_att_type = rearrange_col_type_dicts(header_obj_types,
-                                                                                          header_obj_type_from_att_type,
-                                                                                          column_indices)
-
-# find ui object types and columns including them
-ui_object_match_count_dictionary, ui_object_type_dictionary = find_element_types(log, threshold_ui_obj,
-                                                                                 ratio_dictionary, ui_object_synonym)
-
-# find attribute types and columns including them
-attribute_match_count_dictionary, attribute_type_dictionary = find_element_types(log, threshold_cont_att,
-                                                                                 ratio_dictionary, attribute_synonym)
-
-# find activity types and columns including them
-activity_match_count_dictionary, activity_type_dictionary = find_element_types(log, threshold_act, ratio_dictionary,
-                                                                               action_labels)
-
-# regular expressions to find strings that match the given pattern
-email_regex = '[^@]+@[^@]+\.[^@]+'
-url_regex = '(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})'
-timestamp_regex = '\d{4}[-.\/ ]\d{1,2}[-.\/ ]\d{1,2} \d{2}:\d{2}(:\d{2})?([-,* ]\d{3,4})?|(\d{1,2}[-.\/ ])?\d{1,2}[-.\/ ]\d{2,4} \d{2}:\d{2}(:\d{2})?([-,* ]\d{3,4})?|\d{4}[-.\/ ]\w{3}[-.\/ ]\d{1,2} \d{2}:\d{2}(:\d{2})?([-,* ]\d{3,4})?|\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z'
-
-# call function to check for email addresses and urls
-mail_match_count_dictionary = check_for_regex(log, email_regex)
-url_match_count_dictionary = check_for_regex(log, url_regex)
-timestamp_match_count_dictionary = check_for_regex(log, timestamp_regex)
-
-# ### Assign Column Type
-# call function to categorize the log columns
-column_type_dictionary = get_column_types(log, column_type_dictionary, column_indices, col_compl_dict, ratio_dictionary,
-                                          threshold_timestamp, threshold_cont_att, threshold_val_att,
-                                          ui_object_match_count_dictionary, timestamp_match_count_dictionary,
-                                          url_match_count_dictionary, mail_match_count_dictionary)
-
-# call function to rename the timestamp column
-log = rename_timestamp_col(log, column_type_dictionary)
-
-# make sure NaN values are proper NaNs and not casted to strings
-log.replace('nan', np.NaN, inplace=True)
-
-# ### Complete Element Type Dictionaries
-# call function to get unique values per column
-unique_dictionary = get_unique_values_per_col(log)
-
-# make sure all ui object types are recorded in the object type dictionary
-keys = [key for key, value in column_type_dictionary.items() if 'ui object type' in value]
-for key in keys:
-    value_list = list(unique_dictionary.values())[key]
-    for value in value_list:
-        ui_object_type_dictionary.setdefault(value, value)
-
-# make sure all attribute types are recorded in the attribute type dictionary
-keys = [key for key, value in column_type_dictionary.items() if 'attribute' in value]
-for key in keys:
-    value = log.columns[key]
-    attribute_type_dictionary.setdefault(value, value)
-
-# ## 2. Object Recognition
-# ### Object Hierarchy Definition
 # dictionary specifying the typical ui object hierarchy
 object_hierarchy = {
     'obj_highest_level': ['website', 'application'],
@@ -215,6 +84,117 @@ obj_highest_level = ['website', 'application']
 obj_second_level = ['file']
 obj_third_level = ['sheet']
 obj_fourth_level = ['field', 'button', 'image']
+# </editor-fold>
+
+
+# <editor-fold desc="Ration Thresholds">
+# TODO: optimize thresholds
+# ration thresholds determining the ratio of unique values a column should hold
+threshold_ui_obj = 0.15 # for ui object columns
+threshold_act = 0.2 # for activity columns
+threshold_cont_att = 0.5 # for context attribute columns
+threshold_val_att = 1 - threshold_cont_att # for value attribute columns
+threshold_timestamp = 1 # for timestamp column
+threshold_compl = 0.95 # determines how complete a column should be
+# </editor-fold>
+
+
+# <editor-fold desc="Regular Expressions">
+# regular expressions to find strings that match the given pattern
+email_regex = '[^@]+@[^@]+\.[^@]+'
+url_regex = '(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})'
+timestamp_regex = '\d{4}[-.\/ ]\d{1,2}[-.\/ ]\d{1,2} \d{2}:\d{2}(:\d{2})?([-,* ]\d{3,4})?|(\d{1,2}[-.\/ ])?\d{1,2}[-.\/ ]\d{2,4} \d{2}:\d{2}(:\d{2})?([-,* ]\d{3,4})?|\d{4}[-.\/ ]\w{3}[-.\/ ]\d{1,2} \d{2}:\d{2}(:\d{2})?([-,* ]\d{3,4})?|\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z'
+# </editor-fold>
+
+
+# <editor-fold desc="Preprocessing">
+# call function to delete case separation since it is not needed for this transformation
+log = delete_cases(log)
+
+# call function to remove empty columns
+log = delete_empty_columns_and_rows(log)
+
+# call function to remove duplicate columns from the log
+log = remove_duplicate_columns(log)
+
+# call function to unify the string formats e.g., by eliminating camel case
+log = unify_string_format(log)
+
+# call function to split column names written in camel case into separate words
+log = split_title_camel_case(log)
+
+# call function to replace 'nan' strings and empty strings with np.NaN
+log = replace_nan_strings_with_nan(log)
+# </editor-fold>
+
+# call function to calculate the ratio of unique values/total values per column
+ratio_dictionary = get_unique_value_ratio(log)
+
+# call function to identify the event column of the ui log and move it to the first position 
+log = find_event_column(log, ratio_dictionary, action_labels, threshold_act)
+
+# call function to separate the activities from the object types in the events
+log = extract_activity(log, 0)
+
+# updated the uniqueness-ration dictionary since the columns changed
+ratio_dictionary = get_unique_value_ratio(log)
+
+# call function to calculate the completeness-ratio per column
+col_compl_dict = get_column_completeness(log, threshold_compl)
+
+# initialize list with all column indices
+column_indices = list(range(len(log.columns)))
+
+# call function to find columns that are constant (have the same value for all rows)
+const_cols = find_constant_columns(log)
+
+# call function to find columns that belong to the user rather than to any ui object
+user_cols = find_user_related_cols(log)
+
+# call function to identify element types in the log's column headers
+header_obj_types = find_element_types_in_headers(log, ui_object_synonym) # find object types
+header_att_types = find_element_types_in_headers(log, attribute_synonym) # find attribute types
+
+# categorize columns from dictionary as attribute columns
+column_type_dictionary = categorize_col_as_att(header_att_types)
+column_type_dictionary = categorize_col_as_att(user_cols, column_type_dictionary) # mark user columns as attribute columns
+
+# call function to save the column indices and the object type according to the matched attribute type in a dictionary
+header_obj_type_from_att_type = get_obj_type_based_on_att(header_att_types, att_to_obj_dict)
+
+# call function to re-arrange the dictionaries including info on the column type
+ui_obj_att_cols, column_indices, att_cols_obj_unclear = rearrange_col_type_dicts(header_obj_types,
+                                                                                          header_obj_type_from_att_type,
+                                                                                          column_indices)
+
+# find ui object types and columns including them
+ui_object_match_count_dictionary, ui_object_type_dictionary = find_element_types(log, threshold_ui_obj,
+                                                                                 ratio_dictionary, ui_object_synonym)
+# find attribute types and columns including them
+attribute_match_count_dictionary, attribute_type_dictionary = find_element_types(log, threshold_cont_att,
+                                                                                 ratio_dictionary, attribute_synonym)
+
+# call function to check for regex
+mail_match_count_dictionary = check_for_regex(log, email_regex) # check for mail addresses
+url_match_count_dictionary = check_for_regex(log, url_regex) # check for urls
+timestamp_match_count_dictionary = check_for_regex(log, timestamp_regex) # check for timestamps
+
+# call function to categorize the log columns
+log, column_type_dictionary = get_column_types(log, column_type_dictionary, column_indices, col_compl_dict, ratio_dictionary,
+                                          threshold_timestamp, threshold_cont_att, threshold_val_att,
+                                          ui_object_match_count_dictionary, timestamp_match_count_dictionary,
+                                          url_match_count_dictionary, mail_match_count_dictionary)
+
+# ### Complete Element Type Dictionaries
+# call function to get unique values per column
+unique_dictionary = get_unique_values_per_col(log)
+
+# make sure all ui object types are recorded in the ui object type dictionary
+column_type_dictionary = complete_element_type_dictionary(column_type_dictionary, unique_dictionary,
+                                                          column_type_dictionary, 'ui object type')
+# make sure all attribute types are recorded in the attribute type dictionary
+attribute_type_dictionary = complete_element_type_dictionary(column_type_dictionary, unique_dictionary,
+                                                          attribute_type_dictionary, 'attribute')
 
 # call save_col_index_of_col_types function 
 selected_cols, cont_att_cols, val_att_cols, obj_type_cols, main_obj_type_cols = save_col_index_of_col_types(
@@ -254,10 +234,10 @@ process_obj_dict = find_process_objects(log, pot_process_obj_cols, nouns)
 #             print('new function')
 
 # call function to combine the ui object type dictionaries in one dictionary
-other_ui_obj_cols = combine_ui_obj_type_dicts(ui_obj_att_cols, header_obj_type_from_att_type)
+other_ui_obj_cols = combine_ui_obj_type_dicts(ui_obj_att_cols, att_cols_obj_unclear)
 
 # call function to get columns including attribute types that are not associated with an object type yet
-unmatched_att_list = get_unmatched_att_cols(cont_att_cols, val_att_cols, ui_obj_att_cols, header_obj_type_from_att_type,
+unmatched_att_list = get_unmatched_att_cols(cont_att_cols, val_att_cols, ui_obj_att_cols, att_cols_obj_unclear,
                                             user_cols)
 
 # call function to get dictionaries to save other ui object types and their column indices according to their
