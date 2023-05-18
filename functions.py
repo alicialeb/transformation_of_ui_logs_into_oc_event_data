@@ -178,10 +178,10 @@ def replace_nan_strings_with_nan(log):
     :param log: A pandas DataFrame representing the UI log.
     :return: Modified log with proper np.NaN values.
     """
-    # make sure NaN values are proper NaNs and not casted to strings
-    log.replace('nan', np.NaN, inplace=True)
-    # make sure NaN values are proper NaNs and not casted to strings
-    log.replace('', np.NaN, inplace=True)
+
+    log.replace('nan', np.NaN, inplace=True) # replace string 'nan'
+    log.replace('', np.NaN, inplace=True) # replace empty strings
+    log = log.fillna(value=np.NaN) # replace None
 
     return log
 # </editor-fold>
@@ -505,21 +505,30 @@ def rearrange_col_type_dicts(header_obj_types, header_obj_type_from_att_type, co
                 - a list with columns that have not been assigned a type yet
                 - a dictionary with the column indices and lists of potential object types.
     """
-    # dictionary to save attribute columns where the object type is already known
+    # dictionary including attribute columns where the object type is already known
     ui_obj_att_cols = {}
 
-    # dictionary to save attribute columns where the object type is not clear yet
-    att_cols_obj_unclear = {}
+    # list with keys that should be removed from the dictionary
+    keys_to_remove = []
 
     # concatenate columns where the object type is certain in the ui_obj_att_cols dictionary
     for key, value in header_obj_types.items():
         if key in header_obj_type_from_att_type and value in header_obj_type_from_att_type[key]:
             ui_obj_att_cols[key] = value
-            column_indices.remove(key)  # remove column indices where the object type is clear already
-        else:
-            att_cols_obj_unclear[key] = value
+            keys_to_remove.append(key)
 
-    return ui_obj_att_cols, column_indices, att_cols_obj_unclear
+    # handle columns in header_obj_from_att_type with only one value for a key
+    for key, value in header_obj_type_from_att_type.items():
+        if len(value) == 1 and key not in ui_obj_att_cols:
+            ui_obj_att_cols[key] = value[0]
+            keys_to_remove.append(key)
+
+    # remove column indices that have been moved to the new dictionary from the original one
+    for key in keys_to_remove:
+        del header_obj_type_from_att_type[key]
+        column_indices.remove(key)
+
+    return ui_obj_att_cols, column_indices, header_obj_type_from_att_type
 
 
 def check_for_regex(log, regex):
@@ -773,14 +782,22 @@ def complete_element_type_dictionary(column_type_dictionary, unique_dictionary, 
     return element_type_dictionary
 
 
-# function to save the column indices of the different element types
-def save_col_index_of_col_types(column_type_dictionary):
+def save_col_index_of_col_types(column_type_dictionary, user_cols):
+    """
+    Saves the column indices of the different element types in separate lists.
+
+    :param user_cols: A dictionary holding the column indices that are related to columns that have 'user' in their title.
+    :param column_type_dictionary: A dictionary saving the column type of each column.
+    :return: A tuple of different lists saving the column indices per element type.
+    """
     # lists to save column indices of different column types
-    selected_cols = []
     cont_att_cols = []
     val_att_cols = []
     obj_type_cols = []
     main_obj_type_cols = []
+
+    # list collecting all of the indices
+    selected_cols = []
 
     for index in column_type_dictionary:
         column_type = column_type_dictionary.get(index)
@@ -806,6 +823,10 @@ def save_col_index_of_col_types(column_type_dictionary):
                 if index not in obj_type_cols:
                     obj_type_cols.append(index)
 
+    # the user columns are not relevant to identify the ui object instances
+    for col in user_cols:
+        selected_cols.remove(col)
+
     # sort list, so columns stay in the right order
     selected_cols.sort()
 
@@ -813,7 +834,14 @@ def save_col_index_of_col_types(column_type_dictionary):
 
 
 def get_potential_process_obj_cols(cont_att_cols, url_match_count_dictionary):
-    # dictionary with column indices potentially including process object types
+    """
+    Retrieves columns that potentially include process objects.
+
+    :param cont_att_cols: List of columns of type context attribute.
+    :param url_match_count_dictionary: Dictionary including columns that include urls.
+    :return: A list of column indices, where the columns potentially include process objects.
+    """
+    # dictionary to save column indices potentially including process object types
     pot_process_obj_cols = []
 
     for col in cont_att_cols:
@@ -826,20 +854,81 @@ def get_potential_process_obj_cols(cont_att_cols, url_match_count_dictionary):
     return pot_process_obj_cols
 
 
-def combine_ui_obj_type_dicts(ui_obj_att_cols, header_obj_type_from_att_type):
+# find process object types in the log; only the context attribute columns are interesting here
+def find_process_objects(log, cont_att_cols, nouns):
+    """
+    Recognizes process objects in the log.
+
+    :param log: A pandas DataFrame representing the UI log.
+    :param cont_att_cols: List of columns of type context attribute.
+    :param nouns: A pandas DataFrame including nouns.
+    :return: A dictionary with row indices as keys and a list of process objects included in that row as values.
+    """
+    # regex that recognized camel case
+    camel_underscore_regex = '(?<=[a-z])(?=[A-Z])|(?<![A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=[0-9]|[_]|[.]|[-])'
+
+    # dictionary to save the process object types and their row index
+    process_obj_dict = {}
+
+    for row_index, row in log.iloc[:, cont_att_cols].iterrows():
+        # list for the ui objects
+        process_obj_list = []
+        # loop over column values
+        for col_name, value in row.iteritems():
+
+            # unify the string format first
+            value = str(value).strip()
+            if value is np.NaN:
+                break
+            else:
+                term = [word for word in re.split(camel_underscore_regex, value)]
+                new_value = " ".join(term).lower()
+                str(new_value).strip()
+
+            stem_value = nltk.stem.WordNetLemmatizer().lemmatize(str(new_value))
+
+            # check if the value is in the noun list
+            if stem_value in nouns:
+                if value not in process_obj_list:
+                    process_obj_list.append(value)
+
+        if len(process_obj_list) != 0:
+            process_obj_dict.setdefault(row_index, process_obj_list)
+
+    return process_obj_dict
+
+
+def combine_ui_obj_type_dicts(ui_obj_att_cols, att_cols_obj_unclear):
+    """
+    Combines two
+    :param ui_obj_att_cols: A dictionary including object type related columns.
+    :param att_cols_obj_unclear: A dictionary with the column indices and lists of potential object types.
+    :return: A dictionary including all columns related to ui objects except for the main ui object one and
+                the ui object types.
+    """
     # combine the ui object type dictionaries in one dictionary
     other_ui_obj_cols = {}
 
     for key, value in ui_obj_att_cols.items():
         other_ui_obj_cols[key] = value if isinstance(value, list) else [value]
 
-    for key, value in header_obj_type_from_att_type.items():
+    for key, value in att_cols_obj_unclear.items():
         other_ui_obj_cols[key] = value if isinstance(value, list) else [value]
 
     return other_ui_obj_cols
 
 
-def get_unmatched_att_cols(cont_att_cols, val_att_cols, ui_obj_att_cols, header_obj_type_from_att_type, user_cols):
+def get_unmatched_att_cols(cont_att_cols, val_att_cols, ui_obj_att_cols, att_cols_obj_unclear, user_cols):
+    """
+    Identifies columns that have not been assigned to an object type yet.
+
+    :param cont_att_cols: List of columns of type context attribute.
+    :param val_att_cols: List of columns of type value attribute.
+    :param ui_obj_att_cols: A dictionary including object type related columns.
+    :param att_cols_obj_unclear: A dictionary with the column indices and lists of potential object types.
+    :param user_cols: A dictionary holding the column indices that are related to columns that have 'user' in their title.
+    :return: List of column indices of columns that have not not been assigned to an object type yet.
+    """
     # columns including attribute types that are not associated with an object type yet
     unmatched_att_list = cont_att_cols + val_att_cols
 
@@ -847,7 +936,7 @@ def get_unmatched_att_cols(cont_att_cols, val_att_cols, ui_obj_att_cols, header_
         if index in unmatched_att_list:
             unmatched_att_list.remove(index)
 
-    for index in header_obj_type_from_att_type.keys():
+    for index in att_cols_obj_unclear.keys():
         if index in unmatched_att_list:
             unmatched_att_list.remove(index)
 
@@ -888,7 +977,6 @@ def categorize_other_ui_obj(other_ui_obj_cols, object_hierarchy):
     return other_ui_obj_cols_highest, other_ui_obj_cols_second, other_ui_obj_cols_third, other_ui_obj_cols_fourth, undecided_obj_cols
 
 
-
 def identify_obj_inst_and_hrchy(log, selected_cols, val_att_cols, cont_att_cols, obj_type_cols,
                                 ui_object_type_dictionary, obj_highest_level, obj_second_level, obj_third_level,
                                 obj_fourth_level):
@@ -899,7 +987,7 @@ def identify_obj_inst_and_hrchy(log, selected_cols, val_att_cols, cont_att_cols,
     obj_counter = 0
 
     # create variables to hold the last seen object instance of each object hierarchy
-    #last_high_obj_inst = np.nan
+    #last_app_inst = np.nan
    # last_second_obj_inst = np.nan
     #last_third_obj_inst = np.nan
 
@@ -983,36 +1071,69 @@ def identify_obj_inst_and_hrchy(log, selected_cols, val_att_cols, cont_att_cols,
     return log
 
 
-# find process object types in the log; only the context attribute columns are interesting here 
-def find_process_objects(log, cont_att_cols, nouns):
-    # regex that recognized camel case
-    camel_underscore_regex = '(?<=[a-z])(?=[A-Z])|(?<![A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=[0-9]|[_]|[.]|[-])'
+# function to get all keys that match a target_value
+def find_matching_pairs(dictionary):
+    """
+     Finds matching keys based on their corresponding values in the input dictionary and returns a dictionary
+     where the keys are unique values and the values are lists of keys associated with those values.
 
-    # dictionary to save the process object types and their row index
-    process_obj_dict = {}
+    :param dictionary: A dictionary where some keys have potentially the same values.
+    :return: A dictionary where the keys are unique values and the values are lists of keys associated with those values.
+    """
+    # dictionary that helps swapping keys with values
+    value_to_keys = {}
 
-    for index, row in log.iloc[:, cont_att_cols].iterrows():
-        # list for the ui objects
-        process_obj_list = []
-        # loop over column values
-        for col_name, value in row.iteritems():
+    # dictionary to save the final matching keys and values in
+    matching_pairs = {}
 
-            # unify the string format first
-            value = str(value).strip()
-            if value is np.NaN:
-                break
-            else:
-                term = [word for word in re.split(camel_underscore_regex, value)]
-                new_value = " ".join(term).lower()
+    for key, value in dictionary.items():
+        if value not in value_to_keys:
+            value_to_keys[value] = [key]
+        else:
+            value_to_keys[value].append(key)
 
-            stem_value = nltk.stem.WordNetLemmatizer().lemmatize(str(new_value))
+    for value, keys in value_to_keys.items():
+        matching_pairs[value] = keys
 
-            # check if the value is in the noun list 
-            if stem_value in nouns:
-                if value not in process_obj_list:
-                    process_obj_list.append(value)
+    return matching_pairs
 
-        if len(process_obj_list) != 0:
-            process_obj_dict.setdefault(index, process_obj_list)
 
-    return process_obj_dict
+def find_lowest_value(dictionary):
+    """
+    Finds the lowest value in a dictionary and returns its key.
+
+    :param dictionary: A dictionary where the lowest value is supposed to be found in.
+    :return: A string, which is the key associated with the lowest value in the dictionary.
+    """
+    # initialize with float('inf'), so first value encountered will be smaller and will be updated
+    min_value = float('inf')
+    min_obj = None
+
+    # loop over the values and save the smallest one
+    for key, values in dictionary.items():
+        for value in values:
+            if value < min_value:
+                min_obj = key
+
+    return min_obj
+
+
+def determine_hierarchy_level(object_type, object_hierarchy):
+    """
+    Determines the object type hierarchy level of an input object type.
+
+    :param object_type: A UI object type.
+    :param object_hierarchy: A dictionary specifying the typical ui object hierarchy
+    :return: A string indicating one of four hierarchy levels ('obj_highest_level', 'obj_second_level',
+                'obj_third_level', 'obj_fourth_level')
+    """
+    obj_level = None
+
+    # check to which hierarchy level the object type belongs
+    for level, obj_values in object_hierarchy.items():
+        if object_type in obj_values:
+            obj_level = level
+
+    return obj_level
+
+
