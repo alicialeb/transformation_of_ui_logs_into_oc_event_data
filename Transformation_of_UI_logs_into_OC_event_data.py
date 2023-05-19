@@ -29,6 +29,7 @@ log = pd.read_csv(file_path)
 # supplemented with own ideas (confirm, login)
 action_labels = pd.read_csv(r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\action_labels.csv')
 
+# TODO: search for other noun list, so process objects can be recognized
 # import noun list extracted from wordNet as DataFrame
 nouns = pd.read_csv(r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\nouns_final.csv')
 # </editor-fold>
@@ -631,4 +632,5 @@ for index, row in object_df.iterrows():
 with open('object_output.json', 'w') as f:
     json.dump(objects_dict, f)
 
+# TODO: merge json files to one json file
 print('success')
