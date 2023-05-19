@@ -128,7 +128,7 @@ log = unify_string_format(log)
 log = split_title_camel_case(log)
 
 # call function to replace 'nan' strings and empty strings with np.NaN
-log = replace_nan_strings_with_nan(log)
+log = unify_nan_values(log)
 # </editor-fold>
 
 # call function to calculate the ratio of unique values/total values per column
@@ -246,9 +246,13 @@ other_ui_obj_cols_highest, other_ui_obj_cols_second, other_ui_obj_cols_third, ot
 
 # dictionary to save ui object instances and their unique identifiers
 object_instances_dict = {}
+# dictionary to save process object instances and their unique identifiers
+process_obj_inst_dict = {}
 
-# dataframe to save other ui object instances, their row index and the object instance they are part of
+# dataframe to save other ui object instances and type, their row index and the object instance they are part of
 other_ui_obj_df = pd.DataFrame(columns=['row index', 'object instance', 'object type', 'part_of'])
+# df to save process objects
+process_obj_df = pd.DataFrame(columns=['row index', 'object instance', 'object type'])
 
 # variable to save to which higher instance an object instance belongs and fill last column of the other_ui_obj_df
 part_of = None
@@ -264,7 +268,8 @@ last_second_obj_inst = [] # for object types on second level
 last_third_obj_inst = [] # for object types on third level
 last_fourth_obj_inst = [] # for object types on fourth level
 
-obj_counter = 0 # counter to assign ids to the object instances
+obj_counter = 0 # counter to assign ids to the ui object instances
+process_obj_counter = 0 # counter to assign ids to the process object instances
 
 # loop over the 'main ui object type' column
 for row_index, value in log['main ui object type'].iteritems():
@@ -309,7 +314,7 @@ for row_index, value in log['main ui object type'].iteritems():
                 last_second_obj_inst, last_third_obj_inst, obj_counter)
 
             # other highest level
-            # set variable to false since the main ui object is on this level
+            # set variable to None since the main ui object is on this level
             main_not_this_level = None
             log, obj_counter, object_instances_dict, last_app_inst, last_web_inst, other_ui_obj_df, part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = identify_other_obj_inst(
                 log, object_hierarchy, other_ui_obj_df, object_instances_dict, row_index, value,
@@ -371,7 +376,7 @@ for row_index, value in log['main ui object type'].iteritems():
                     last_app_inst, last_second_obj_inst, last_third_obj_inst, obj_counter)
 
                 # other second level
-                # set variable to false since the main ui object is on this level
+                # set variable to None since the main ui object is on this level
                 main_not_this_level = None
                 log, obj_counter, object_instances_dict, last_second_obj_inst, last_web_inst, other_ui_obj_df, part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = identify_other_obj_inst(
                     log, object_hierarchy, other_ui_obj_df, object_instances_dict, row_index, value,
@@ -416,7 +421,7 @@ for row_index, value in log['main ui object type'].iteritems():
                         obj_counter)
 
                     # other third level
-                    # set variable to true since the main ui object is not on this level
+                    # set variable to None since the main ui object is on this level
                     main_not_this_level = None
                     log, obj_counter, object_instances_dict, last_third_obj_inst, last_web_inst, other_ui_obj_df, part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = identify_other_obj_inst(
                         log, object_hierarchy, other_ui_obj_df, object_instances_dict, row_index, value,
@@ -452,7 +457,7 @@ for row_index, value in log['main ui object type'].iteritems():
                         obj_counter)
 
                     # other fourth level
-                    # set variable to true since the main ui object is not on this level
+                    # set variable to None since the main ui object is on this level
                     main_not_this_level = None
                     log, obj_counter, object_instances_dict, last_fourth_obj_inst, last_web_inst, other_ui_obj_df, part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = identify_other_obj_inst(
                         log, object_hierarchy, other_ui_obj_df, object_instances_dict, row_index, value,
@@ -463,9 +468,7 @@ for row_index, value in log['main ui object type'].iteritems():
     # if the value is not given, use a ui object type from a higher hierarchy level
     else:
 
-        value = 'unknown'
-
-        # initialize value_term for the case that the value is not part of the ui_object_synonym
+        value = 'unknown' # since no main UI object is given
         value_term = value
 
         # check to which hierarchy level the object type belongs
@@ -509,7 +512,7 @@ for row_index, value in log['main ui object type'].iteritems():
             last_second_obj_inst, last_third_obj_inst, obj_counter)
 
         # other fourth level
-        # set variable to true since the main ui object is not on this level
+        # set variable to None since the main ui object is on this level
         main_not_this_level = None
         log, obj_counter, object_instances_dict, last_fourth_obj_inst, last_web_inst, other_ui_obj_df, part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = identify_other_obj_inst(
             log, object_hierarchy, other_ui_obj_df, object_instances_dict, row_index, value,
@@ -517,13 +520,21 @@ for row_index, value in log['main ui object type'].iteritems():
             last_app_inst, last_second_obj_inst, last_third_obj_inst, obj_counter, main_not_this_level, part_of,
             other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols)
 
+    # generate process object instances for the user-related objects
+    process_obj_df, log = add_user_objects(log, process_obj_df, user_cols, row_index, process_obj_inst_dict, process_obj_counter)
+
+    # TODO: manage process objects
+
+
+
 # unify nan values
-log = replace_nan_strings_with_nan(log)
-other_ui_obj_df = replace_nan_strings_with_nan(other_ui_obj_df)
+log = unify_nan_values(log)
+other_ui_obj_df = unify_nan_values(other_ui_obj_df)
+process_obj_df = unify_nan_values(process_obj_df)
 
-# TODO: manage user columns
-# TODO: manage process objects
 
+
+# TODO: adjust json to new layout
 cont_att_list = []
 for i in cont_att_cols:
     cont_att_list.append(log.columns[i])

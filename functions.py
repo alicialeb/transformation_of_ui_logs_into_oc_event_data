@@ -170,7 +170,7 @@ def split_title_camel_case(log):
     return log
 
 
-def replace_nan_strings_with_nan(log):
+def unify_nan_values(log):
     """
     Replaces 'nan' strings and empty strings with np.NaN,
     so these values can be recognized as proper NaN values later on.
@@ -1354,7 +1354,7 @@ def generate_key(att_list, object_instances_dict, value, obj_counter):
     return obj_inst, object_instances_dict, obj_counter
 
 
-def create_new_row(log, obj, log_row_index, obj_inst, part_of, other_ui_obj_df, att_col_indices_list, val_att_cols, cont_att_cols, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols):
+def create_new_row_ui_obj_df(log, obj, log_row_index, obj_inst, part_of, other_ui_obj_df, att_col_indices_list, val_att_cols, cont_att_cols, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols):
     """
     Adds a new row to the input DataFrame and populates it with input values.
     It also adds additional columns to the df if they don't exist, assigns attribute values to the corresponding columns,
@@ -1589,7 +1589,9 @@ def identify_other_obj_inst(log, object_hierarchy, other_ui_obj_df, object_insta
         # don't add object instances to the df that don't actually exist
         if obj_inst is not None:
             # call function to add a row with new info to the other_ui_obj_df
-            other_ui_obj_df, log, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = create_new_row(log, obj, row_index, obj_inst, part_of, other_ui_obj_df, att_col_indices_list, val_att_cols, cont_att_cols, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols)
+            other_ui_obj_df, log, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = create_new_row_ui_obj_df(
+                log, obj, row_index, obj_inst, part_of, other_ui_obj_df, att_col_indices_list, val_att_cols,
+                cont_att_cols, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols)
 
 
         # if the main ui object is not on the same level, then set this object instance as last instance of this level
@@ -1609,4 +1611,71 @@ def identify_other_obj_inst(log, object_hierarchy, other_ui_obj_df, object_insta
     return log, obj_counter, object_instances_dict, last_obj_inst, last_web_inst, other_ui_obj_df, part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols
 
 
+def create_new_row_process_obj_df(log, obj_type, log_row_index, obj_inst, process_obj_df, user_cols):
+    """
+    Adds a new row to the input DataFrame and populates it with input values.
+    It also adds additional columns to the df if they don't exist, assigns attribute values to the corresponding columns,
+    and removes the values from the log.
+
+    :param log: A pandas DataFrame representing the UI log.
+    :param obj_type: String with the object type.
+    :param log_row_index: Row index of the log.
+    :param obj_inst: String with the object instance.
+    :param process_obj_df: DataFrame including object instances other than the main object instances.
+    :param user_cols: Dictionary with indices of the attribute columns that are user-related and the column titles.
+    :return: Tuple of the modified df, log, and lists of columns in the df that are of type value and context attribute.
+    """
+    # get index of the new row
+    new_row_index = len(process_obj_df)
+
+    process_obj_df.at[new_row_index, 'row index'] = log_row_index
+    process_obj_df.at[new_row_index, 'object instance'] = obj_inst
+    process_obj_df.at[new_row_index, 'object type'] = obj_type
+
+    for log_col_index in user_cols.keys():
+        column_title = log.columns[log_col_index]
+        attribute_value = log.iloc[log_row_index, log_col_index]
+        # if the column title does not exist in the df, add it
+        if column_title not in process_obj_df.columns:
+            process_obj_df[column_title] = None
+
+        column_index = process_obj_df.columns.get_loc(column_title)
+
+        # add the value to the df
+        process_obj_df.at[new_row_index, column_title] = attribute_value
+
+        # remove the value from the log
+        log.iloc[log_row_index, log_col_index] = np.NaN
+
+    return process_obj_df, log
+
+
+def add_user_objects(log, process_obj_df, user_cols, row_index, process_obj_inst_dict, process_obj_counter):
+    """
+    Manages the user objects found in the log.
+
+    :param log: A pandas DataFrame representing the UI log.
+    :param process_obj_df: A pandas DataFrame for the process object instances and their attributes.
+    :param user_cols: Dictionary with indices of the attribute columns that are user-related and the column titles.
+    :param row_index: Row index of the log.
+    :param process_obj_inst_dict: A Dictionary with process object instances as values and their attribute combinations as keys.
+    :param process_obj_counter: An integer making sure the object instance ids are unique.
+    :return: A tuple of the modified process_obj_df and the modified log
+    """
+    obj_type = 'user'
+
+    att_list = []  # list to save relevant attribute values
+
+    # save relevant attribute values
+    for col_index in user_cols.keys():
+        att_value = log.iloc[row_index, col_index]
+        att_list.append(att_value)
+
+    process_obj_inst, process_obj_inst_dict, process_obj_counter = generate_key(att_list, process_obj_inst_dict,
+                                                                                obj_type, process_obj_counter)
+
+    process_obj_df, log = create_new_row_process_obj_df(log, obj_type, row_index, process_obj_inst, process_obj_df,
+                                                        user_cols)
+
+    return process_obj_df, log
 
