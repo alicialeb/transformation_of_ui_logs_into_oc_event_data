@@ -449,7 +449,7 @@ def categorize_col_as_att(dictionary, column_type_dictionary=None):
     """
     Categorized columns included in the dictionary as 'value attribute', 'context attribute', or 'attribute'.
     :param dictionary: A dictionary including the columns that are supposed to be categorized as attribut type columns.
-    :param column_type_dictionary: A dictionary saving the column type of each column.
+    :param column_type_dictionary: An optional dictionary saving the column type of each column.
     :return: A dictionary saving the column type of each column.
     """
     # if dictionary to save column types per column does not exist yet create one
@@ -948,6 +948,13 @@ def get_unmatched_att_cols(cont_att_cols, val_att_cols, ui_obj_att_cols, att_col
 
 
 def categorize_other_ui_obj(other_ui_obj_cols, object_hierarchy):
+    """
+    Categorizes the ui object types found in the log and saves them in separate dictionaries.
+
+    :param other_ui_obj_cols: A dictionary with column indices as keys and object types as values.
+    :param object_hierarchy: A dictionary specifying the typical ui object hierarchy.
+    :return: A tuple of the dictionaries including the column indices and object types per hierarchy level.
+    """
     # dictionaries to save other ui object types and their column indices according to their hierarchy level
     other_ui_obj_cols_highest = {}
     other_ui_obj_cols_second = {}
@@ -1123,9 +1130,9 @@ def determine_hierarchy_level(object_type, object_hierarchy):
     Determines the object type hierarchy level of an input object type.
 
     :param object_type: A UI object type.
-    :param object_hierarchy: A dictionary specifying the typical ui object hierarchy
+    :param object_hierarchy: A dictionary specifying the typical ui object hierarchy.
     :return: A string indicating one of four hierarchy levels ('obj_highest_level', 'obj_second_level',
-                'obj_third_level', 'obj_fourth_level')
+                'obj_third_level', 'obj_fourth_level').
     """
     obj_level = None
 
@@ -1139,5 +1146,262 @@ def determine_hierarchy_level(object_type, object_hierarchy):
         obj_level = 'obj_fourth_level'
 
     return obj_level
+
+
+def check_value_availability(log, dictionary, row_index):
+    """
+    Checks if values from the input dictionary are given in the respective cell of the input log.
+
+    :param log: A pandas DataFrame representing the UI log.
+    :param dictionary: A dictionary with object types as keys and column indices as values.
+    :param row_index: Row index of the input log.
+    :return: A dictionary with object types available in the log as keys and their column indices in the log as values.
+    """
+    # dictionary to save object types that have existing attribute values and their column index
+    available_obj = {}
+
+    for obj_type, col_indices in dictionary.items():
+        col_index_list = []
+        for col_index in col_indices:
+            if log.iloc[row_index][col_index] is not np.NaN:
+                col_index_list.append(col_index)
+
+        if col_index_list:
+            available_obj.setdefault(obj_type, col_index_list)
+
+    return available_obj
+
+
+def get_attribute_values(log, row_index, combined_att_list, val_att_cols, cont_att_cols):
+    """
+    Saves attribute combination needed to identify object instances in a list.
+
+    :param log: A pandas DataFrame representing the UI log.
+    :param row_index: Row index of the input log.
+    :param combined_att_list: List with column indices indicating relevant attribute columns.
+    :param val_att_cols: List of columns of type value attribute.
+    :param cont_att_cols: List of columns of type context attribute.
+    :return: A tuple of a list to save the attribute combination needed to identify object instances
+                and a list to save the respective column indices.
+    """
+    # lists to save attributes
+    att_list = []
+
+    # list to save the column indices belonging to the attributes
+    att_col_indices_list = []
+
+    # loop over the column indices and check if the columns hold value attributes or context attributes
+    # append the values to the lists accordingly
+    for col_index in combined_att_list:
+
+        cell_value = log.iloc[row_index, col_index]
+
+        # for the context attribute columns save the column value in the list
+        if col_index in cont_att_cols and cell_value is not np.NaN:
+            att_list.append(log.iloc[row_index, col_index])
+            att_col_indices_list.append(col_index)
+
+        # for the value attribute columns save the column title in the list
+        elif col_index in val_att_cols and cell_value is not np.NaN:
+            att_list.append(log.columns[col_index])
+            att_col_indices_list.append(col_index)
+
+    return att_list, att_col_indices_list
+
+
+def add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web_inst, last_app_inst, last_second_obj_inst,
+                                   last_third_obj_inst, obj_is_main, part_of=None):
+    """
+    Adds object instances of higher hierarchy levels to the attribute combination, so the object instance can be determined.
+
+    :param log: A pandas DataFrame representing the UI log.
+    :param att_list: A list with the attribute combination needed to identify object instances.
+    :param row_index: Row index of the input log.
+    :param obj_level:  A string indicating one of four UI object hierarchy levels ('obj_highest_level',
+                        'obj_second_level', 'obj_third_level', 'obj_fourth_level')
+    :param last_web_inst: A string with the object instance of the last seen website object.
+    :param last_app_inst: A string with the object instance of the last seen application object.
+    :param last_second_obj_inst: A string with the object instance of the last seen second level object.
+    :param last_third_obj_inst: A string with the object instance of the last seen third level object.
+    :param obj_is_main: Boolean indicating if the object at question is the main UI object type of the current row.
+    :param part_of: An optional string with the last mentioned next higher object instance that the object at question is part of.
+                    This parameter is only given for UI object types other than the main UI object type of the row.
+    :return: A tuple of a string with the last mentioned next higher object instance (optional),
+                a list with the attribute combination needed to identify object instances, and
+                the modified log with the part_of-column filled.
+    """
+    # only add higher levels to the list, if there are already attributes in the list
+    if att_list:
+
+        if obj_level == 'obj_highest_level':
+            if obj_is_main is None:
+                part_of = None
+
+        if obj_level == 'obj_second_level' or obj_level == 'obj_third_level':
+            # if list is not empty, append the object instance included in it
+            if last_app_inst:
+                att_list.append(last_app_inst[0])
+                if obj_is_main is True:
+                    log.loc[row_index, 'part of'] = last_app_inst[0]
+                else:
+                    part_of = last_app_inst[0]
+
+        if obj_level == 'obj_third_level':
+            # if list is not empty, append the object instance included in it
+            if last_second_obj_inst:
+                att_list.append(last_second_obj_inst[0])
+                if obj_is_main is True:
+                    log.loc[row_index, 'part of'] = last_second_obj_inst[0]
+                else:
+                    part_of = last_second_obj_inst[0]
+
+        if obj_level == 'obj_fourth_level':
+            # if in same row an object instance of third level exists, then have application as first level
+            if row_index == last_third_obj_inst[1]:
+                if last_app_inst:
+                    att_list.append(last_app_inst[0])
+
+                if last_second_obj_inst:
+                    att_list.append(last_second_obj_inst[0])
+
+                if last_third_obj_inst:
+                    att_list.append(last_third_obj_inst[0])
+                    if obj_is_main:
+                        log.loc[row_index, 'part of'] = last_third_obj_inst[0]
+                    else:
+                        part_of = last_third_obj_inst[0]
+
+            # if no third level obj instance in same row, then have website as first level
+            else:
+                if last_web_inst:
+                    att_list.append(last_web_inst[0])
+                    if obj_is_main:
+                        log.loc[row_index, 'part of'] = last_web_inst[0]
+                    else:
+                        part_of = last_web_inst[0]
+
+    if obj_is_main is True:
+        return att_list, log
+    else:
+        return part_of, att_list, log
+
+
+def get_relevant_att_cols(local_other_ui_obj_cols, unmatched_att_list, value_term):
+    """
+    Retrieves attribute columns relevant to determine the UI object instance.
+
+    :param local_other_ui_obj_cols: Dictionary with columns related to object types other than the main UI object type;
+                                        with indices as keys and object types as values.
+    :param unmatched_att_list: List with attribute columns that have not been assigned an object type yet.
+    :param value_term: String with the object type of the current object.
+    :return: A tuple of a list with all relevant attribute columns and the updated local_other_ui_obj_cols.
+    """
+    # list to collect relevant columns
+    relevant_cols = []
+
+    # check if the ui object type matches any other ui object type found in the log headers
+    for index, obj_val in local_other_ui_obj_cols.items():
+        if str(value_term) in obj_val:
+            relevant_cols.append(index)
+
+    # remove column indices from the dictionary because they have already been considered
+    for index in relevant_cols:
+        local_other_ui_obj_cols.pop(index, None)
+
+    # combine the lists relevant to determine the ui object instance
+    combined_att_list = unmatched_att_list + relevant_cols
+
+    return combined_att_list, local_other_ui_obj_cols
+
+
+def generate_key(att_list, object_instances_dict, value, obj_counter):
+    """
+    Generates a key for a dictionary based on the given attributes and values.
+
+    This key serves as a basis to determine the object instance.
+
+    :param att_list: A list with the attribute combination needed to identify object instances.
+    :param object_instances_dict: A dictionary to save the attribute combinations as keys and the object instances as values.
+    :param value: A String with the object type currently in question.
+    :param obj_counter: An integer making sure the object instance ids are unique.
+    :return: A tuple consisting of the object instance, the dictionary with all object instances and their keys, and
+                the object_counter.
+    """
+    # remove nan values from the list
+    att_list = [att for att in att_list if att is not None]
+
+    # if there is more than one value in the list, build a tuple so it can be used as a dictionary key
+    if len(att_list) > 1:
+        att_combi = tuple(att_list)
+        if att_combi not in object_instances_dict:
+            obj_counter += 1
+            object_instances_dict.setdefault(att_combi, f'{value}_{obj_counter}')
+        obj_inst = object_instances_dict[att_combi]
+
+    elif len(att_list) == 1:
+        att_val = att_list[0]
+        if att_val not in object_instances_dict and att_val is not np.NaN:
+            obj_counter += 1
+            object_instances_dict.setdefault(att_val, f'{value}_{obj_counter}')
+        obj_inst = object_instances_dict[att_val]
+
+    # if the att_list is empty, no object instance should be created
+    else:
+        obj_inst = None
+
+    return obj_inst, object_instances_dict, obj_counter
+
+
+def create_new_row(log, obj, log_row_index, obj_inst, part_of, other_ui_obj_df, att_col_indices_list, val_att_cols, cont_att_cols, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols):
+    """
+    Adds a new row to the input DataFrame and populates it with input values.
+    It also adds additional columns to the df if they don't exist, assigns attribute values to the corresponding columns,
+    and removes the values from the log.
+
+    :param log: A pandas DataFrame representing the UI log.
+    :param obj: String with the object type.
+    :param log_row_index: Row index of the log.
+    :param obj_inst: String with the object instance.
+    :param part_of: String with the object instance the object in question is part of.
+    :param other_ui_obj_df: DataFrame including object instances other than the main object instances.
+    :param att_col_indices_list: List with indices of the attribute columns that are relevant for the object instance.
+    :param val_att_cols: List of columns in the log that are of type value attribute.
+    :param cont_att_cols: List of columns in the log that are of type context attribute.
+    :param other_ui_obj_df_val_att_cols: List of columns in the df that are of type value attribute.
+    :param other_ui_obj_df_cont_att_cols: List of columns in the df that are of type context attribute.
+    :return: Tuple of the modified df, log, and lists of columns in the df that are of type value and context attribute.
+    """
+    # get index of the new row
+    new_row_index = len(other_ui_obj_df)
+
+    other_ui_obj_df.at[new_row_index, 'row index'] = log_row_index
+    other_ui_obj_df.at[new_row_index, 'object instance'] = obj_inst
+    other_ui_obj_df.at[new_row_index, 'object type'] = obj
+    other_ui_obj_df.at[new_row_index, 'part_of'] = part_of
+
+    for log_col_index in att_col_indices_list:
+        column_title = log.columns[log_col_index]
+        attribute_value = log.iloc[log_row_index, log_col_index]
+        # if the column title does not exist in the df, add it
+        if column_title not in other_ui_obj_df.columns:
+            other_ui_obj_df[column_title] = None
+
+        column_index = other_ui_obj_df.columns.get_loc(column_title)
+
+        # carry on info about the attribute column type
+        if log_col_index in val_att_cols:
+            if column_index not in other_ui_obj_df_val_att_cols:
+                other_ui_obj_df_val_att_cols.append(column_index)
+        elif log_col_index in cont_att_cols:
+            if column_index not in other_ui_obj_df_cont_att_cols:
+                other_ui_obj_df_cont_att_cols.append(column_index)
+
+        # add the value to the df
+        other_ui_obj_df.at[new_row_index, column_title] = attribute_value
+
+        # remove the value from the log
+        log.iloc[log_row_index, log_col_index] = np.NaN
+
+    return other_ui_obj_df, log, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols
 
 

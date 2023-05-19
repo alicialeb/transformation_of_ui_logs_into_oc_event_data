@@ -217,7 +217,7 @@ pot_process_obj_cols = get_potential_process_obj_cols(cont_att_cols, url_match_c
 process_obj_dict = find_process_objects(log, pot_process_obj_cols, nouns)
 
 
-# Todo: find out if I still need the old function
+# TODO: find out if I still need the old function
 # # function to differentiate different log formats
 # for key, value_list in ui_object_synonym.items():
 #     obj = log.loc[0,'main ui object type']
@@ -243,190 +243,7 @@ unmatched_att_list = get_unmatched_att_cols(cont_att_cols, val_att_cols, ui_obj_
 other_ui_obj_cols_highest, other_ui_obj_cols_second, other_ui_obj_cols_third, other_ui_obj_cols_fourth, undecided_obj_cols = categorize_other_ui_obj(
     other_ui_obj_cols, object_hierarchy)
 
-# Todo: move functions to other file
-def check_value_availability(log, dictionary, row_index):
-
-    # dictionary to save object types that have existing attribute values and their column index
-    available_obj = {}
-
-    for obj_type, col_indices in dictionary.items():
-        col_index_list = []
-        for col_index in col_indices:
-            if log.iloc[row_index][col_index] is not np.NaN:
-                col_index_list.append(col_index)
-
-        if col_index_list:
-            available_obj.setdefault(obj_type, col_index_list)
-
-    return available_obj
-
-
-def get_attribute_values(log, row_index, combined_att_list, val_att_cols, cont_att_cols):
-    # lists to save attributes
-    att_list = []
-
-    # list to save the column indices belonging to the attributes
-    att_col_indices_list = []
-
-    # loop over the column indices and check if the columns hold value attributes or context attributes
-    # append the values to the lists accordingly
-    for col_index in combined_att_list:
-
-        # for the value attribute columns, save the column title in the list
-        cell_value = log.iloc[row_index, col_index]
-
-        # for the context attribute columns save the column value in the list
-        if col_index in cont_att_cols and cell_value is not np.NaN:
-            att_list.append(log.iloc[row_index, col_index])
-            att_col_indices_list.append(col_index)
-
-        elif col_index in val_att_cols and cell_value is not np.NaN:
-            att_list.append(log.columns[col_index])
-            att_col_indices_list.append(col_index)
-
-    return att_list, att_col_indices_list
-
-
-def add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web_inst, last_high_obj_inst, last_second_obj_inst,
-                                   last_third_obj_inst, obj_is_main, part_of=None):
-
-    # only add higher levels to the list, if there are already attributes in the list
-    if att_list:
-
-        if obj_level == 'obj_highest_level':
-            if obj_is_main is None:
-                part_of = None
-
-        if obj_level == 'obj_second_level' or obj_level == 'obj_third_level':
-            # if list is not empty, append the object instance included in it
-            if last_high_obj_inst:
-                att_list.append(last_high_obj_inst[0])
-                if obj_is_main is True:
-                    log.loc[row_index, 'part of'] = last_high_obj_inst[0]
-                else:
-                    part_of = last_high_obj_inst[0]
-
-        if obj_level == 'obj_third_level':
-            # if list is not empty, append the object instance included in it
-            if last_second_obj_inst:
-                att_list.append(last_second_obj_inst[0])
-                if obj_is_main is True:
-                    log.loc[row_index, 'part of'] = last_second_obj_inst[0]
-                else:
-                    part_of = last_second_obj_inst[0]
-
-        if obj_level == 'obj_fourth_level':
-            # if in same row an object instance of third level exists, then have application as first level
-            if row_index == last_third_obj_inst[1]:
-                if last_high_obj_inst:
-                    att_list.append(last_high_obj_inst[0])
-
-                if last_second_obj_inst:
-                    att_list.append(last_second_obj_inst[0])
-
-                if last_third_obj_inst:
-                    att_list.append(last_third_obj_inst[0])
-                    if obj_is_main:
-                        log.loc[row_index, 'part of'] = last_third_obj_inst[0]
-                    else:
-                        part_of = last_third_obj_inst[0]
-
-            # if no third level obj instance in same row, then have website as first level
-            else:
-                if last_web_inst:
-                    att_list.append(last_web_inst[0])
-                    if obj_is_main:
-                        log.loc[row_index, 'part of'] = last_web_inst[0]
-                    else:
-                        part_of = last_web_inst[0]
-
-    if obj_is_main is True:
-        return att_list, log
-    else:
-        return part_of, att_list, log
-
-
-def get_relevant_att_cols(local_other_ui_obj_cols, unmatched_att_list, value_term):
-    # list to collect relevant columns
-    relevant_cols = []
-
-    # check if the ui object type matches any other ui object type found in the log headers
-    for index, obj_val in local_other_ui_obj_cols.items():
-        if str(value_term) in obj_val:
-            relevant_cols.append(index)
-
-    # remove column indices from the dictionary because they have already been considered
-    for index in relevant_cols:
-        local_other_ui_obj_cols.pop(index, None)
-
-    # combine the lists relevant to determine the ui object instance
-    combined_att_list = unmatched_att_list + relevant_cols
-
-    return combined_att_list, local_other_ui_obj_cols
-
-
-def generate_key(att_list, object_instances_dict, value, obj_counter):
-
-    # remove nan values from the list
-    att_list = [att for att in att_list if att is not None]
-
-    # if there is more than one value in the list, build a tuple so it can be used as a dictionary key
-    if len(att_list) > 1:
-        att_combi = tuple(att_list)
-        if att_combi not in object_instances_dict:
-            obj_counter += 1
-            object_instances_dict.setdefault(att_combi, f'{value}_{obj_counter}')
-        obj_inst = object_instances_dict[att_combi]
-
-    elif len(att_list) == 1:
-        att_val = att_list[0]
-        if att_val not in object_instances_dict and att_val is not np.NaN:
-            obj_counter += 1
-            object_instances_dict.setdefault(att_val, f'{value}_{obj_counter}')
-        obj_inst = object_instances_dict[att_val]
-
-    else:
-        obj_inst = None
-
-    return obj_inst, object_instances_dict, obj_counter
-
-
-def create_new_row(log, obj, log_row_index, obj_inst, part_of, other_ui_obj_df, att_col_indices_list, val_att_cols, cont_att_cols, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols):
-
-    # get index of the new row
-    new_row_index = len(other_ui_obj_df)
-
-    other_ui_obj_df.at[new_row_index, 'row index'] = log_row_index
-    other_ui_obj_df.at[new_row_index, 'object instance'] = obj_inst
-    other_ui_obj_df.at[new_row_index, 'object type'] = obj
-    other_ui_obj_df.at[new_row_index, 'part_of'] = part_of
-
-    for log_col_index in att_col_indices_list:
-        column_title = log.columns[log_col_index]
-        attribute_value = log.iloc[log_row_index, log_col_index]
-        # if the column title does not exist in the df, add it
-        if column_title not in other_ui_obj_df.columns:
-            other_ui_obj_df[column_title] = None
-
-        column_index = other_ui_obj_df.columns.get_loc(column_title)
-
-        # carry on info about the attribute column type
-        if log_col_index in val_att_cols:
-            if column_index not in other_ui_obj_df_val_att_cols:
-                other_ui_obj_df_val_att_cols.append(column_index)
-        elif log_col_index in cont_att_cols:
-            if column_index not in other_ui_obj_df_cont_att_cols:
-                other_ui_obj_df_cont_att_cols.append(column_index)
-
-        # add the value to the df
-        other_ui_obj_df.at[new_row_index, column_title] = attribute_value
-
-        # remove the value from the log
-        log.iloc[log_row_index, log_col_index] = np.NaN
-
-    return other_ui_obj_df, log, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols
-
-
+# TODO: move functions to other file
 def identify_main_object_instances(log, object_instances_dict, row_index, value, value_term, obj_level,
                                    local_other_ui_obj_cols, unmatched_att_list, val_att_cols, cont_att_cols,
                                    last_obj_inst, last_web_inst, last_high_obj_inst, last_second_obj_inst, last_third_obj_inst,
@@ -434,16 +251,15 @@ def identify_main_object_instances(log, object_instances_dict, row_index, value,
     # call function to get a list of the relevant attribute columns
     combined_att_list, local_other_ui_obj_cols = get_relevant_att_cols(local_other_ui_obj_cols, unmatched_att_list,
                                                                        value_term)
-    # Todo: if no main given and higher level chosen as main, unassigned columns are added to the list even though they
-    #  don't fit the object type -> should I rather introduce 'unknown' as main?
 
     # function that loops over the list to combine all attribute values to identify the object instance
     att_list, att_col_indices_list = get_attribute_values(log, row_index, combined_att_list, val_att_cols, cont_att_cols)
 
     # call function to add value to the 'part of' column
     obj_is_main = True
-    att_list, log = add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web_inst, last_high_obj_inst,
-                                                   last_second_obj_inst, last_third_obj_inst, obj_is_main)
+    att_list, log = add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web_inst,
+                                                   last_high_obj_inst, last_second_obj_inst, last_third_obj_inst,
+                                                   obj_is_main)
 
     # call function to form a key from the attribute combination to get the object instance
     obj_inst, object_instances_dict, obj_counter = generate_key(att_list, object_instances_dict, value, obj_counter)
@@ -476,8 +292,9 @@ def identify_other_obj_inst(log, object_hierarchy, other_ui_obj_df, object_insta
 
         # call function to add value to the 'part of' variable
         obj_is_main = None
-        part_of, att_list, log = add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web_inst, last_high_obj_inst,
-                                                                last_second_obj_inst, last_third_obj_inst, obj_is_main, part_of)
+        part_of, att_list, log = add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web_inst,
+                                                                last_high_obj_inst, last_second_obj_inst,
+                                                                last_third_obj_inst, obj_is_main, part_of)
 
         # call function to form a key from the attribute combination to get the object instance
         obj_inst, object_instances_dict, obj_counter = generate_key(att_list, object_instances_dict, obj, obj_counter)
