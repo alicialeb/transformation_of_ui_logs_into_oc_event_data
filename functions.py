@@ -332,7 +332,7 @@ def find_event_column(log, ratio_dictionary, action_labels, ratio_threshold):
         return log
 
 
-# Todo: POS tagging or list comparison to separate activity and object type
+# TODO: list comparison to separate activity and object type
 def extract_activity(log, event_column_index):
     """
     Splits events into their activities and object types.

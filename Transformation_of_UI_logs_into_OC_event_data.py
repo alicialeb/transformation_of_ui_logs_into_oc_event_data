@@ -244,7 +244,7 @@ unmatched_att_list = get_unmatched_att_cols(cont_att_cols, val_att_cols, ui_obj_
 other_ui_obj_cols_highest, other_ui_obj_cols_second, other_ui_obj_cols_third, other_ui_obj_cols_fourth, undecided_obj_cols = categorize_other_ui_obj(
     other_ui_obj_cols, object_hierarchy)
 
-
+# TODO: move this to a function
 # dictionary to save ui object instances and their unique identifiers
 object_instances_dict = {}
 # dictionary to save process object instances and their unique identifiers
@@ -633,4 +633,3 @@ with open('object_output.json', 'w') as f:
     json.dump(objects_dict, f)
 
 # TODO: merge json files to one json file
-print('success')
