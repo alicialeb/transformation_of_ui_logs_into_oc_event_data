@@ -1134,6 +1134,10 @@ def determine_hierarchy_level(object_type, object_hierarchy):
         if object_type in obj_values:
             obj_level = level
 
+    # if no level can be assigned, assign the lowest level
+    if obj_level is None:
+        obj_level = 'obj_fourth_level'
+
     return obj_level
 
 

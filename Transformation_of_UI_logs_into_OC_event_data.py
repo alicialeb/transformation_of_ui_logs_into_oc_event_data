@@ -5,6 +5,7 @@
 # - log is sorted by the timestamp starting with the earliest point in time.
 # - if the log is already split into cases, the case id is in the first column of the log.
 # - every UI log has some sort of event or activity column.
+# - object types that cannot be recognized belong to the fourth level.
 
 # <editor-fold desc="Imports">
 import json
@@ -765,25 +766,11 @@ for row_index, value in log['main ui object type'].iteritems():
 
     # if the value is not given, use a ui object type from a higher hierarchy level
     else:
-        # call function to find out which columns have the same object type
-        local_other_ui_obj_cols_highest_matched = find_matching_pairs(local_other_ui_obj_cols_highest)
 
-        # Todo: check if 2nd or 3rd level available to decide on highest level object
-
-        # check which object type of the highest level is present in this row
-        available_obj_high = check_value_availability(log, local_other_ui_obj_cols_highest_matched, row_index)
-
-        # use ui object from highest level with lowest index as replacement
-        value = find_lowest_value(available_obj_high)
+        value = 'unknown'
 
         # initialize value_term for the case that the value is not part of the ui_object_synonym
         value_term = value
-
-        # get standardized name from ui object dictionary
-        for key, value_list in ui_object_synonym.items():
-            if value in value_list or value == key:
-                value_term = key
-                break
 
         # check to which hierarchy level the object type belongs
         obj_level = determine_hierarchy_level(value_term, object_hierarchy)
@@ -794,48 +781,52 @@ for row_index, value in log['main ui object type'].iteritems():
                                                                                        local_other_ui_obj_cols_fourth,
                                                                                        local_unmatched_att_list, row_index)
 
-        # main highest level
-        log, obj_counter, object_instances_dict, last_app_inst, last_web_inst, local_other_ui_obj_cols_highest = identify_main_object_instances(
-            log, object_instances_dict, row_index, value, value_term, obj_level, local_other_ui_obj_cols_highest,
-            local_unmatched_att_list, val_att_cols, cont_att_cols, last_app_inst, last_web_inst, last_app_inst,
-            last_second_obj_inst, last_third_obj_inst, obj_counter)
-
-        # other highest level
-        # set variable to false since the main ui object is on this level
-        main_not_this_level = None
-        log, obj_counter, object_instances_dict, last_app_inst, last_web_inst, other_ui_obj_df, part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = identify_other_obj_inst(
-            log, object_hierarchy, other_ui_obj_df, object_instances_dict, row_index, local_other_ui_obj_cols_highest,
-            val_att_cols, cont_att_cols, last_app_inst, last_web_inst, last_app_inst, last_second_obj_inst,
-            last_third_obj_inst, obj_counter, main_not_this_level, part_of, other_ui_obj_df_val_att_cols,
-            other_ui_obj_df_cont_att_cols)
-
         # set variable to true since the main ui object is not on this level
         main_not_this_level = True
 
+        # other highest level
+        log, obj_counter, object_instances_dict, last_app_inst, last_web_inst, other_ui_obj_df, part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = identify_other_obj_inst(
+            log, object_hierarchy, other_ui_obj_df, object_instances_dict, row_index,
+            local_other_ui_obj_cols_highest, val_att_cols, cont_att_cols, last_app_inst, last_web_inst,
+            last_app_inst, last_second_obj_inst, last_third_obj_inst, obj_counter, main_not_this_level, part_of,
+            other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols)
+
         # other second level
         log, obj_counter, object_instances_dict, last_second_obj_inst, last_web_inst, other_ui_obj_df, part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = identify_other_obj_inst(
-            log, object_hierarchy, other_ui_obj_df, object_instances_dict, row_index, local_other_ui_obj_cols_second,
-            val_att_cols, cont_att_cols, last_second_obj_inst, last_web_inst, last_app_inst, last_second_obj_inst,
-            last_third_obj_inst, obj_counter, main_not_this_level, part_of, other_ui_obj_df_val_att_cols,
-            other_ui_obj_df_cont_att_cols)
+            log, object_hierarchy, other_ui_obj_df, object_instances_dict, row_index,
+            local_other_ui_obj_cols_second, val_att_cols, cont_att_cols, last_second_obj_inst, last_web_inst,
+            last_app_inst, last_second_obj_inst, last_third_obj_inst, obj_counter, main_not_this_level, part_of,
+            other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols)
 
         # other third level
         log, obj_counter, object_instances_dict, last_third_obj_inst, last_web_inst, other_ui_obj_df, part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = identify_other_obj_inst(
-            log, object_hierarchy, other_ui_obj_df, object_instances_dict, row_index, local_other_ui_obj_cols_third,
-            val_att_cols, cont_att_cols, last_third_obj_inst, last_web_inst, last_app_inst, last_second_obj_inst,
-            last_third_obj_inst, obj_counter, main_not_this_level, part_of, other_ui_obj_df_val_att_cols,
-            other_ui_obj_df_cont_att_cols)
+            log, object_hierarchy, other_ui_obj_df, object_instances_dict, row_index,
+            local_other_ui_obj_cols_third, val_att_cols, cont_att_cols, last_third_obj_inst, last_web_inst,
+            last_app_inst, last_second_obj_inst, last_third_obj_inst, obj_counter, main_not_this_level,
+            part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols)
+
+        # main fourth level
+        log, obj_counter, object_instances_dict, last_fourth_obj_inst, last_web_inst, local_other_ui_obj_cols_fourth = identify_main_object_instances(
+            log, object_instances_dict, row_index, value, value_term, obj_level,
+            local_other_ui_obj_cols_fourth, local_unmatched_att_list, val_att_cols, cont_att_cols,
+            last_fourth_obj_inst, last_web_inst, last_app_inst, last_second_obj_inst, last_third_obj_inst,
+            obj_counter)
 
         # other fourth level
+        # set variable to true since the main ui object is not on this level
+        main_not_this_level = None
         log, obj_counter, object_instances_dict, last_fourth_obj_inst, last_web_inst, other_ui_obj_df, part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = identify_other_obj_inst(
-            log, object_hierarchy, other_ui_obj_df, object_instances_dict, row_index, local_other_ui_obj_cols_fourth,
-            val_att_cols, cont_att_cols, last_fourth_obj_inst, last_web_inst, last_app_inst, last_second_obj_inst,
-            last_third_obj_inst, obj_counter, main_not_this_level, part_of, other_ui_obj_df_val_att_cols,
-            other_ui_obj_df_cont_att_cols)
+            log, object_hierarchy, other_ui_obj_df, object_instances_dict, row_index,
+            local_other_ui_obj_cols_fourth, val_att_cols, cont_att_cols, last_fourth_obj_inst,
+            last_web_inst, last_app_inst, last_second_obj_inst, last_third_obj_inst, obj_counter,
+            main_not_this_level, part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols)
 
 # unify nan values
 log = replace_nan_strings_with_nan(log)
 other_ui_obj_df = replace_nan_strings_with_nan(other_ui_obj_df)
+
+# TODO: manage user columns
+# TODO: manage process objects
 
 cont_att_list = []
 for i in cont_att_cols:
