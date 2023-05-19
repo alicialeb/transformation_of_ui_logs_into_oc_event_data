@@ -187,6 +187,7 @@ def replace_nan_strings_with_nan(log):
 # </editor-fold>
 
 
+# <editor-fold desc="1. Column Type Classification">
 def get_unique_value_ratio(log):
     """
     Counts how many unique values there are per column and calculates a ratio (unique_values/total_number_of_values).
@@ -898,6 +899,7 @@ def find_process_objects(log, cont_att_cols, nouns):
     return process_obj_dict
 
 
+
 def combine_ui_obj_type_dicts(ui_obj_att_cols, att_cols_obj_unclear):
     """
     Combines two
@@ -982,6 +984,7 @@ def categorize_other_ui_obj(other_ui_obj_cols, object_hierarchy):
             undecided_obj_cols[index] = obj_types
 
     return other_ui_obj_cols_highest, other_ui_obj_cols_second, other_ui_obj_cols_third, other_ui_obj_cols_fourth, undecided_obj_cols
+# </editor-fold>
 
 
 def identify_obj_inst_and_hrchy(log, selected_cols, val_att_cols, cont_att_cols, obj_type_cols,
@@ -1078,7 +1081,6 @@ def identify_obj_inst_and_hrchy(log, selected_cols, val_att_cols, cont_att_cols,
     return log
 
 
-# function to get all keys that match a target_value
 def find_matching_pairs(dictionary):
     """
      Finds matching keys based on their corresponding values in the input dictionary and returns a dictionary
@@ -1403,5 +1405,208 @@ def create_new_row(log, obj, log_row_index, obj_inst, part_of, other_ui_obj_df, 
         log.iloc[log_row_index, log_col_index] = np.NaN
 
     return other_ui_obj_df, log, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols
+
+
+def decide_undecided_obj_cols(log, undecided_obj_cols, value_term, obj_level, local_other_ui_obj_cols_fourth, unmatched_att_list, row_index):
+    """
+    Chooses how to handle the columns where the object type is not clear yet.
+
+    :param log: A pandas DataFrame representing the UI log.
+    :param undecided_obj_cols: A dictionary with column indices that haven't been assigned one clear object type
+                                but a list of possible ones.
+    :param value_term: String with the object type of the current object.
+    :param obj_level: A string indicating UI object's hierarchy level ('obj_highest_level',
+                        'obj_second_level', 'obj_third_level', or 'obj_fourth_level').
+    :param local_other_ui_obj_cols_fourth: A dictionary with the column indices and object types that are on the fourth
+                                            hierarchy level.
+    :param unmatched_att_list: List with attribute columns that have not been assigned an object type yet.
+    :param row_index: Row index of the log.
+    :return: A tuple of the updated unmatched_att_list and the updated local_other_ui_obj_cols_fourth.
+    """
+    if obj_level == 'obj_fourth_level':
+        for obj_index, obj_types in undecided_obj_cols.items():
+            # if the undecided column object possibility matches the main, then add it to the unmatched list,
+            #  so it will be added to the main's attributes
+            if value_term in obj_types:
+                if obj_index not in unmatched_att_list:
+                    unmatched_att_list.append(obj_index)
+
+            else:
+                # call function to find out which columns have the same object type
+                local_other_ui_obj_cols_fourth_matched = find_matching_pairs(local_other_ui_obj_cols_fourth)
+
+                # check which object type of the highest level is present in this row
+                available_obj = check_value_availability(log, local_other_ui_obj_cols_fourth_matched, row_index)
+
+                # if it doesn't match the main, check if it matches any available other fourth level object type
+                if available_obj in obj_types:
+                    local_other_ui_obj_cols_fourth.setdefault(obj_index, available_obj)
+
+                # if non matches it will be added to the main
+                else:
+                    if obj_index not in unmatched_att_list:
+                        unmatched_att_list.append(obj_index)
+
+    else:
+        for obj_index, obj_types in undecided_obj_cols.items():
+            # call function to find out which columns have the same object type
+            local_other_ui_obj_cols_fourth_matched = find_matching_pairs(local_other_ui_obj_cols_fourth)
+
+            # check which object type of the highest level is present in this row
+            available_obj = check_value_availability(log, local_other_ui_obj_cols_fourth_matched, row_index)
+
+            # if it doesn't match the main, check if it matches any available other fourth level object type
+            for avail_obj in available_obj:
+                if avail_obj in obj_types:
+                    local_other_ui_obj_cols_fourth.setdefault(obj_index, avail_obj)
+
+                # if non matches it will be added to the main
+                else:
+                    if obj_index not in unmatched_att_list:
+                        unmatched_att_list.append(obj_index)
+
+    return unmatched_att_list, local_other_ui_obj_cols_fourth
+
+
+def identify_main_object_instances(log, object_instances_dict, row_index, value, value_term, obj_level,
+                                   local_other_ui_obj_cols, unmatched_att_list, val_att_cols, cont_att_cols,
+                                   last_obj_inst, last_web_inst, last_app_inst, last_second_obj_inst, last_third_obj_inst,
+                                   obj_counter):
+    """
+    Identifies main object instances.
+
+    :param log: A pandas DataFrame representing the UI log.
+    :param object_instances_dict: A dictionary to save the attribute combinations as keys and the object instances as values.
+    :param row_index: Row index of the log.
+    :param value: String with the object type.
+    :param value_term: String with the official term for the object type.
+    :param obj_level: A string indicating UI object's hierarchy level ('obj_highest_level',
+                        'obj_second_level', 'obj_third_level', or 'obj_fourth_level').
+    :param local_other_ui_obj_cols: Dictionary with columns related to object types other than the main UI object type;
+                                        with indices as keys and object types as values.
+    :param unmatched_att_list: List with attribute columns that have not been assigned an object type yet.
+    :param val_att_cols: List of columns in the log that are of type value attribute.
+    :param cont_att_cols: List of columns in the log that are of type context attribute.
+    :param last_obj_inst: String holding the last higher level object instance.
+    :param last_web_inst: A string with the object instance of the last seen website object.
+    :param last_app_inst: A string with the object instance of the last seen application object.
+    :param last_second_obj_inst: A string with the object instance of the last seen second level object.
+    :param last_third_obj_inst: A string with the object instance of the last seen third level object.
+    :param obj_counter: An integer making sure the object instance ids are unique.
+    :return: A tuple consisting of:
+                - the modified log,
+                - the adjusted obj_counter,
+                - the modified object_instances_dict,
+                - the updated last_obj_inst,
+                - the adjusted last_web_inst,
+                - the modified local_other_ui_obj_cols.
+    """
+
+    # call function to get a list of the relevant attribute columns
+    combined_att_list, local_other_ui_obj_cols = get_relevant_att_cols(local_other_ui_obj_cols, unmatched_att_list,
+                                                                       value_term)
+
+    # function that loops over the list to combine all attribute values to identify the object instance
+    att_list, att_col_indices_list = get_attribute_values(log, row_index, combined_att_list, val_att_cols, cont_att_cols)
+
+    # call function to add value to the 'part of' column
+    obj_is_main = True
+    att_list, log = add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web_inst,
+                                                   last_app_inst, last_second_obj_inst, last_third_obj_inst,
+                                                   obj_is_main)
+
+    # call function to form a key from the attribute combination to get the object instance
+    obj_inst, object_instances_dict, obj_counter = generate_key(att_list, object_instances_dict, value, obj_counter)
+
+    log.loc[row_index, 'object instance'] = obj_inst
+
+    # saves instance of last object for this  hierarchy level
+    if value_term == 'website':
+        last_web_inst = [obj_inst, row_index]
+    else:
+        last_obj_inst = [obj_inst, row_index]
+
+    return log, obj_counter, object_instances_dict, last_obj_inst, last_web_inst, local_other_ui_obj_cols
+
+
+def identify_other_obj_inst(log, object_hierarchy, other_ui_obj_df, object_instances_dict, row_index, value,
+                            local_other_ui_obj_cols, val_att_cols, cont_att_cols, last_obj_inst, last_web_inst, last_app_inst,
+                            last_second_obj_inst, last_third_obj_inst, obj_counter, main_not_this_level, part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols):
+    """
+     Identifies object instances for objects other than the main object.
+
+    :param value: String with the object type.
+    :param log: A pandas DataFrame representing the UI log.
+    :param object_hierarchy: A dictionary specifying the typical ui object hierarchy.
+    :param other_ui_obj_df: DataFrame including object instances other than the main object instances.
+    :param object_instances_dict: A dictionary to save the attribute combinations as keys and the object instances as values.
+    :param row_index: Row index of the log.
+    :param local_other_ui_obj_cols: Dictionary with columns related to object types other than the main UI object type;
+                                        with indices as keys and object types as values.
+    :param val_att_cols: List of columns in the log that are of type value attribute.
+    :param cont_att_cols: List of columns in the log that are of type context attribute.
+    :param last_obj_inst: String holding the last higher level object instance.
+    :param last_web_inst: A string with the object instance of the last seen website object.
+    :param last_app_inst: A string with the object instance of the last seen application object.
+    :param last_second_obj_inst: A string with the object instance of the last seen second level object.
+    :param last_third_obj_inst: A string with the object instance of the last seen third level object.
+    :param obj_counter: An integer making sure the object instance ids are unique.
+    :param main_not_this_level: Boolean indicating whether the main UI object of the current row is on the same hierarchy level.
+    :param part_of: String with the object instance the object in question is part of.
+    :param other_ui_obj_df_val_att_cols: List of columns in the df that are of type value attribute.
+    :param other_ui_obj_df_cont_att_cols: List of columns in the df that are of type context attribute.
+    :return: A tuple consisting of:
+            - the modified log,
+            - the updated obj_counter,
+            - the modified object_instances_dict,
+            - the new last_obj_inst,
+            - the new last_web_inst,
+            - the modified other_ui_obj_df,
+            - the updated part_of,
+            - the changed other_ui_obj_df_val_att_cols,
+            - the changed other_ui_obj_df_cont_att_cols.
+    """
+    # call function to find out which columns have the same object type
+    local_other_ui_obj_cols = find_matching_pairs(local_other_ui_obj_cols)
+
+    for obj, indices in local_other_ui_obj_cols.items():
+
+        # check to which hierarchy level the object type belongs
+        obj_level = determine_hierarchy_level(obj, object_hierarchy)
+
+        # function that loops over the list to combine all attribute values to identify the object instance
+        att_list, att_col_indices_list = get_attribute_values(log, row_index, indices, val_att_cols, cont_att_cols)
+
+        # call function to add value to the 'part of' variable
+        obj_is_main = None
+        part_of, att_list, log = add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web_inst,
+                                                                last_app_inst, last_second_obj_inst,
+                                                                last_third_obj_inst, obj_is_main, part_of)
+
+        # call function to form a key from the attribute combination to get the object instance
+        obj_inst, object_instances_dict, obj_counter = generate_key(att_list, object_instances_dict, obj, obj_counter)
+
+        # don't add object instances to the df that don't actually exist
+        if obj_inst is not None:
+            # call function to add a row with new info to the other_ui_obj_df
+            other_ui_obj_df, log, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = create_new_row(log, obj, row_index, obj_inst, part_of, other_ui_obj_df, att_col_indices_list, val_att_cols, cont_att_cols, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols)
+
+
+        # if the main ui object is not on the same level, then set this object instance as last instance of this level
+        if main_not_this_level is True and obj_inst is not None:
+            if obj == 'website':
+                last_web_inst = [obj_inst, row_index]
+            else:
+                last_obj_inst = [obj_inst, row_index]
+
+        # on the highest level the last values of both types have to be saved
+        if obj_level == 'obj_highest_level':
+            if value == 'website' and obj != value:
+                last_obj_inst = [obj_inst, row_index]
+            if value == 'application' and obj != value:
+                last_web_inst = [obj_inst, row_index]
+
+    return log, obj_counter, object_instances_dict, last_obj_inst, last_web_inst, other_ui_obj_df, part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols
+
 
 
