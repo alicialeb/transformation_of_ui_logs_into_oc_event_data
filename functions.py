@@ -1347,7 +1347,7 @@ def create_new_row_ui_obj_df(log, obj, log_row_index, obj_inst, part_of, other_u
     other_ui_obj_df.at[new_row_index, 'row index'] = log_row_index
     other_ui_obj_df.at[new_row_index, 'object instance'] = obj_inst
     other_ui_obj_df.at[new_row_index, 'object type'] = obj
-    other_ui_obj_df.at[new_row_index, 'part_of'] = part_of
+    other_ui_obj_df.at[new_row_index, 'part of'] = part_of
 
     for log_col_index in att_col_indices_list:
         column_title = log.columns[log_col_index]
@@ -1639,7 +1639,7 @@ def recognize_obj_instances(log, object_hierarchy, ui_object_synonym, undecided_
     process_obj_inst_dict = {}  # dictionary to save process object instances and their unique identifiers
 
     # dataframe to save other ui object instances and type, their row index and the object instance they are part of
-    other_ui_obj_df = pd.DataFrame(columns=['row index', 'object instance', 'object type', 'part_of'])
+    other_ui_obj_df = pd.DataFrame(columns=['row index', 'object instance', 'object type', 'part of'])
 
     # variable to save to which higher instance an object instance belongs and fill last column of the other_ui_obj_df
     part_of = None
@@ -1989,3 +1989,98 @@ def create_event_json(log, val_att_cols):
     # write the event dictionary to a JSON file
     with open('event_output.json', 'w') as f:
         json.dump(events_dict, f)
+
+
+def create_main_ui_obj_dict(log, cont_att_cols, val_att_cols):
+    """
+    Creates a dictionary for the main UI objects that is already in a json friendly format.
+
+    :param log: A pandas DataFrame representing the UI log.
+    :param cont_att_cols: List of columns in the log that are of type context attribute.
+    :param val_att_cols: List of columns in the log that are of type value attribute.
+    :return: A dictionary for the main UI objects that is already in a json friendly format.
+    """
+    object_df = copy.deepcopy(log) # copy log to keep the original one
+    ui_objects_dict = {} # ui object dictionary to achieve a json structure
+
+    # drop duplicate object instances and keep only the once that occur latest in time
+    object_df = object_df.sort_values('timestamp').drop_duplicates(['object instance'], keep='last').sort_index()
+
+    # drop the timestamp column
+    object_df = object_df.drop(['timestamp'], axis=1)
+
+    # reset indices, so they start with zero again and don't have gaps
+    object_df.reset_index(drop=True, inplace=True)
+
+    # convert the df into a json readable format
+    for row_index, row in object_df.iterrows():
+        cont_att_dict = {} # dictionary for context attribute values and their type
+        val_att_dict = {} # dictionary for value attribute values and their type
+        part_of = [] # list for ui object instances the main ui object is part of
+
+        for col_index in cont_att_cols:
+            cont_att_val = log.iloc[row_index, col_index]  # context attribute value
+            cont_att_type = log.columns[col_index]  # context attribute type
+            if not pd.isna(cont_att_val):
+                cont_att_dict[cont_att_type] = cont_att_val
+        for col_index in val_att_cols:
+            val_att_val = log.iloc[row_index, col_index]  # value attribute value
+            val_att_type = log.columns[col_index]  # value attribute type
+            if not pd.isna(val_att_val):
+                val_att_dict[val_att_type] = val_att_val
+
+        if not pd.isna(row["part of"]):
+            part_of.append(row["part of"])
+
+        obj_type = row["main ui object type"]
+        if pd.isna(obj_type):
+            obj_type = 'unknown'
+
+        ui_objects_dict[row["object instance"]] = {
+            "type": obj_type,
+            "cmap": cont_att_dict,
+            "vmap": val_att_dict,
+            "omap": part_of
+        }
+
+    return ui_objects_dict
+
+
+# convert the df into a json readable format
+def create_ui_obj_json(ui_objects_dict, other_ui_obj_df, other_ui_obj_df_cont_att_cols, other_ui_obj_df_val_att_cols):
+    """
+    Creates a json file including the ui object instances of the log.
+    :param ui_objects_dict: A dictionary for the main UI objects that is already in a json friendly format.
+    :param other_ui_obj_df: DataFrame including object instances other than the main object instances.
+    :param other_ui_obj_df_cont_att_cols: List of columns in the df that are of type context attribute.
+    :param other_ui_obj_df_val_att_cols: List of columns in the df that are of type value attribute.
+    """
+    for row_index, row in other_ui_obj_df.iterrows():
+        cont_att_dict = {} # dictionary for context attribute values and their type
+        val_att_dict = {} # dictionary for value attribute values and their type
+        part_of = [] # list for ui object instances the main ui object is part of
+
+        for col_index in other_ui_obj_df_cont_att_cols:
+            cont_att_val = other_ui_obj_df.iloc[row_index, col_index]  # context attribute value
+            cont_att_type = other_ui_obj_df.columns[col_index]  # context attribute type
+            if not pd.isna(cont_att_val):
+                cont_att_dict[cont_att_type] = cont_att_val
+        for col_index in other_ui_obj_df_val_att_cols:
+            val_att_val = other_ui_obj_df.iloc[row_index, col_index]  # value attribute value
+            val_att_type = other_ui_obj_df.columns[col_index]  # value attribute type
+            if not pd.isna(val_att_val):
+                val_att_dict[val_att_type] = val_att_val
+
+        if not pd.isna(row["part of"]):
+            part_of.append(row["part of"])
+
+        ui_objects_dict[row["object instance"]] = {
+            "type": row["object type"],
+            "cmap": cont_att_dict,
+            "vmap": val_att_dict,
+            "omap": part_of
+        }
+
+    # write the object dictionary to a JSON file
+    with open('object_output.json', 'w') as f:
+        json.dump(ui_objects_dict, f)
