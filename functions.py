@@ -9,6 +9,7 @@ from tkinter import filedialog as fd
 import re
 import nltk
 import copy
+import json
 
 def import_log():
     """
@@ -1928,7 +1929,64 @@ def recognize_obj_instances(log, object_hierarchy, ui_object_synonym, undecided_
         process_obj_df, log = add_user_objects(log, process_obj_df, user_cols, row_index, process_obj_inst_dict,
                                                process_obj_counter)
 
-    return log, other_ui_obj_df, process_obj_df
-
+    return log, other_ui_obj_df, process_obj_df, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols
 # </editor-fold>
 
+
+def create_event_json(log, val_att_cols):
+    """
+    Creates a json file including the event instances of the log.
+
+    :param log: A pandas DataFrame representing the UI log.
+    :param val_att_cols: List of columns in the log that are of type value attribute.
+    """
+    event_df = pd.DataFrame()  # df for event related data
+    event_instances = []  # list for event instances
+    event_val_att_cols = [] # list for the value attribute columns in the new event_df
+
+    # assign ids to events
+    for x in range(1, len(log) + 1):
+        event_instances.append(f'event_{x}')
+
+    event_df['event id'] = event_instances  # add id column to event_df
+
+    # the value attribute columns are needed because we want to save the value an activity triggers to be saved with the event
+    for col_index in val_att_cols:
+        col = log.columns[col_index]
+        event_df[col] = log.iloc[:, col_index]
+        event_val_att_col_index = event_df.columns.get_loc(col)
+        event_val_att_cols.append(event_val_att_col_index)
+
+    # restructure the df
+    for col in log.columns:
+        if 'activity' in col:
+            event_df[col] = log.pop(col)
+        if 'timestamp' in col:
+            event_df[col] = log[col]
+        if 'object instance' in col:
+            event_df[col] = log[col]
+
+    events_dict = {}  # event dictionary to achieve a json structure
+
+    # convert timestamp to string, so json can parse it
+    event_df['timestamp'] = event_df['timestamp'].astype(str)
+
+    for row_index, row in event_df.iterrows():
+        val_att_dict = {}  # dictionary to save the value attribute value and the object the attribute belongs to
+        for col_index in event_val_att_cols:
+            att_val = event_df.iloc[row_index, col_index] # value attribute value
+            att_type = event_df.columns[col_index] # value attribute type
+            if att_val is not np.NaN:
+                val_att_dict[f"{row['object instance']}.{att_type}"] = att_val
+
+        # add data to the dictionary
+        events_dict[row["event id"]] = {
+            "activity": row["activity"],
+            "timestamp": row["timestamp"],
+            "omap": row["object instance"],
+            "vmap": val_att_dict
+        }
+
+    # write the event dictionary to a JSON file
+    with open('event_output.json', 'w') as f:
+        json.dump(events_dict, f)

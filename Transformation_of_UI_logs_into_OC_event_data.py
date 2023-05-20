@@ -128,6 +128,8 @@ log = split_title_camel_case(log)
 log = unify_nan_values(log)
 # </editor-fold>
 
+
+# <editor-fold desc="1. Column Type Classification">
 # call function to calculate the ratio of unique values/total values per column
 uniqueness_ratio_dictionary = get_unique_value_ratio(log)
 
@@ -185,8 +187,10 @@ log, column_type_dictionary = get_column_types(log, column_type_dictionary, colu
                                           threshold_timestamp, threshold_cont_att, threshold_val_att,
                                           ui_object_match_count_dictionary, timestamp_match_count_dictionary,
                                           url_match_count_dictionary, mail_match_count_dictionary)
+# </editor-fold>
 
-# ### Complete Element Type Dictionaries
+
+# <editor-fold desc="2. Object Recognition">
 # call function to get unique values per column
 unique_dictionary = get_unique_values_per_col(log)
 
@@ -228,114 +232,64 @@ unmatched_att_list = get_unmatched_att_cols(cont_att_cols, val_att_cols, ui_obj_
 other_ui_obj_cols_highest, other_ui_obj_cols_second, other_ui_obj_cols_third, other_ui_obj_cols_fourth, undecided_obj_cols = categorize_other_ui_obj(
     other_ui_obj_cols, object_hierarchy)
 
-log, other_ui_obj_df, process_obj_df = recognize_obj_instances(log, object_hierarchy, ui_object_synonym,
+log, other_ui_obj_df, process_obj_df, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = recognize_obj_instances(log, object_hierarchy, ui_object_synonym,
                                                                undecided_obj_cols, other_ui_obj_cols_highest,
                                                                other_ui_obj_cols_second, other_ui_obj_cols_third,
                                                                other_ui_obj_cols_fourth, val_att_cols, cont_att_cols,
                                                                user_cols, unmatched_att_list, process_obj_df)
+# </editor-fold>
+
 
 # unify nan values
 log = unify_nan_values(log)
 other_ui_obj_df = unify_nan_values(other_ui_obj_df)
 process_obj_df = unify_nan_values(process_obj_df)
 
-
-
 # TODO: adjust json to new layout
-# cont_att_list = []
-# for i in cont_att_cols:
-#     cont_att_list.append(log.columns[i])
-#
-# val_att_list = []
-# for i in val_att_cols:
-#     val_att_list.append(log.columns[i])
-#
-# # ## 5. Restructuring the Log
-# # ### Create Event DataFrame
-# event_df = pd.DataFrame()
-#
-# event_instances = []
-#
-# for x in range(1, len(log) + 1):
-#     event_instances.append(f'event_{x}')
-#
-# event_df['event id'] = event_instances
-#
-# for col_index in val_att_cols:
-#     col = log.columns[col_index]
-#     event_df[col] = log.iloc[:, col_index]
-#
-# for col in log.columns:
-#     if 'activity' in col:
-#         event_df[col] = log.pop(col)
-#     if 'timestamp' in col:
-#         event_df[col] = log[col]
-#     if 'object instance' in col:
-#         event_df[col] = log[col]
-#
-# events_dict = {}
-#
-# # convert timestamp to string, so json can parse it
-# event_df['timestamp'] = event_df['timestamp'].astype(str)
-#
-# for index, row in event_df.iterrows():
-#     val_att_dict = {}
-#     for att in val_att_list:
-#         if att is not np.NaN:
-#             val_att_dict[f"{row['object instance']}.{att}"] = row[att]
-#
-#     events_dict[row["event id"]] = {
-#         "activity": row["activity"],
-#         "timestamp": row["timestamp"],
-#         "omap": row["object instance"],
-#         "vmap": val_att_dict
-#     }
-#
-# # write the event dictionary to a JSON file
-# with open('event_output.json', 'w') as f:
-#     json.dump(events_dict, f)
-#
-# # ### Create Object DataFrame
-# # copy log
-# object_df = copy.deepcopy(log)
-#
-# # drop duplicate object instances and keep only the once that occure latest in time
-# object_df = object_df.sort_values('timestamp').drop_duplicates(['object instance'], keep='last').sort_index()
-#
-# # drop the timestamp column
-# object_df = object_df.drop(['timestamp'], axis=1)
-#
-# # reset indices, so they start with zero again and don't have gaps
-# object_df.reset_index(drop=True, inplace=True)
-#
-# objects_dict = {}
-# att_list = []
-#
-# # convert the df into json format
-# for index, row in object_df.iterrows():
-#     cont_att_dict = {}
-#     val_att_dict = {}
-#     part_of = []
-#
-#     for att in cont_att_list:
-#         if att is not np.NaN:
-#             cont_att_dict[att] = row[att]
-#     for att in val_att_list:
-#         if att is not np.NaN:
-#             val_att_dict[att] = row[att]
-#
-#     if row["part of"] is not np.NaN:
-#         part_of.append(row["part of"])
-#
-#     objects_dict[row["object instance"]] = {
-#         "type": row["main ui object type"],
-#         "cmap": cont_att_dict,
-#         "vmap": val_att_dict,
-#         "omap": part_of
-#     }
-#
-# # write the object dictionary to a JSON file
-# with open('object_output.json', 'w') as f:
-#     json.dump(objects_dict, f)
+
+# call function to create the event json file
+create_event_json(log, val_att_cols)
+
+
+object_df = copy.deepcopy(log) # copy log to keep the original one
+
+# drop duplicate object instances and keep only the once that occure latest in time
+object_df = object_df.sort_values('timestamp').drop_duplicates(['object instance'], keep='last').sort_index()
+
+# drop the timestamp column
+object_df = object_df.drop(['timestamp'], axis=1)
+
+# reset indices, so they start with zero again and don't have gaps
+object_df.reset_index(drop=True, inplace=True)
+
+objects_dict = {}
+att_list = []
+
+# convert the df into json format
+for index, row in object_df.iterrows():
+    cont_att_dict = {}
+    val_att_dict = {}
+    part_of = []
+
+    for att in cont_att_cols:
+        if att is not np.NaN:
+            cont_att_dict[att] = row[att]
+    for att in val_att_cols:
+        if att is not np.NaN:
+            val_att_dict[att] = row[att]
+
+    if row["part of"] is not np.NaN:
+        part_of.append(row["part of"])
+
+    objects_dict[row["object instance"]] = {
+        "type": row["main ui object type"],
+        "cmap": cont_att_dict,
+        "vmap": val_att_dict,
+        "omap": part_of
+    }
+
+# write the object dictionary to a JSON file
+with open('object_output.json', 'w') as f:
+    json.dump(objects_dict, f)
 
 # TODO: merge json files to one json file
