@@ -222,7 +222,7 @@ pot_process_obj_cols = get_potential_process_obj_cols(cont_att_cols, url_match_c
 process_obj_df = pd.DataFrame(columns=['row index', 'object instance', 'object type'])
 
 # call function to find process objects in the log
-process_obj_df = find_process_objects(log, pot_process_obj_cols, nouns, process_obj_df)
+process_obj_df, obj_counter = find_process_objects(log, pot_process_obj_cols, nouns, process_obj_df)
 
 # call function to combine the ui object type dictionaries in one dictionary
 other_ui_obj_cols = combine_ui_obj_type_dicts(ui_obj_att_cols, att_cols_obj_unclear)
@@ -240,7 +240,7 @@ log, other_ui_obj_df, process_obj_df, other_ui_obj_df_val_att_cols, other_ui_obj
                                                                undecided_obj_cols, other_ui_obj_cols_highest,
                                                                other_ui_obj_cols_second, other_ui_obj_cols_third,
                                                                other_ui_obj_cols_fourth, val_att_cols, cont_att_cols,
-                                                               user_cols, unmatched_att_list, process_obj_df)
+                                                               user_cols, unmatched_att_list, process_obj_df, obj_counter)
 # </editor-fold>
 
 
@@ -249,6 +249,7 @@ log = unify_nan_values(log)
 other_ui_obj_df = unify_nan_values(other_ui_obj_df)
 process_obj_df = unify_nan_values(process_obj_df)
 
+# TODO: add process object instances and other UI object instances to event json
 # call function to create the event json file
 create_event_json(log, val_att_cols)
 
@@ -258,5 +259,6 @@ ui_objects_dict = create_main_ui_obj_dict(log, cont_att_cols, val_att_cols)
 # call function to create the ui object json file
 create_ui_obj_json(ui_objects_dict, other_ui_obj_df, other_ui_obj_df_cont_att_cols, other_ui_obj_df_val_att_cols)
 
+create_process_obj_json(process_obj_df)
 
-# TODO: merge json files to one json file
+# TODO: merge json files to one json file -> idea: put all dictionaries in a dictionary and then convert it to json

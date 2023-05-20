@@ -907,13 +907,14 @@ def find_process_objects(log, cont_att_cols, nouns, process_obj_df):
     :param cont_att_cols: List of columns of type context attribute.
     :param nouns: A pandas DataFrame including nouns.
     :param process_obj_df: A pandas DataFrame for the process objects found in the log.
-    :return: A dictionary with row indices as keys and a list of process objects included in that row as values.
+    :return: A tuple of a dictionary with row indices as keys and a list of process objects included in that row as values
+                and a counter that assures that each object instance id is unique.
     """
     # regex that recognized camel case
     camel_underscore_regex = '(?<=[a-z])(?=[A-Z])|(?<![A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=[0-9]|[_]|[.]|[-])'
 
-    # process object instance can't be determined since attributes can't be assigned to the objects
-    process_obj_inst = None
+    process_obj_inst_dict = {}
+    obj_counter = 0 # counter to assure that ass object instance ids are unique
 
     for row_index, row in log.iloc[:, cont_att_cols].iterrows():
         # list for the ui objects
@@ -937,12 +938,17 @@ def find_process_objects(log, cont_att_cols, nouns, process_obj_df):
             if stem_value in nouns:
                 if value not in process_obj_list:
                     process_obj_list.append(value)
+                    # real process object instance can't be determined since attributes can't be assigned to the objects
+                    #   so every process object that has the same name gets the same object instance assigned
+                    process_obj_inst_dict.setdefault(value, f'{value}_{obj_counter}')
+                    obj_counter += 1
 
         for process_obj in process_obj_list:
+            process_obj_inst = process_obj_inst_dict[process_obj]
+            # call function to create a new row in the process_obj_df
             process_obj_df, log = create_new_row_process_obj_df(log, process_obj, row_index, process_obj_inst, process_obj_df)
 
-    return process_obj_df
-
+    return process_obj_df, obj_counter
 
 
 def combine_ui_obj_type_dicts(ui_obj_att_cols, att_cols_obj_unclear):
@@ -1579,7 +1585,7 @@ def identify_other_obj_inst(log, object_hierarchy, other_ui_obj_df, object_insta
     return log, obj_counter, object_instances_dict, last_obj_inst, last_web_inst, other_ui_obj_df, part_of, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols
 
 
-def add_user_objects(log, process_obj_df, user_cols, row_index, process_obj_inst_dict, process_obj_counter):
+def add_user_objects(log, process_obj_df, user_cols, row_index, process_obj_inst_dict, obj_counter):
     """
     Manages the user objects found in the log.
 
@@ -1588,7 +1594,7 @@ def add_user_objects(log, process_obj_df, user_cols, row_index, process_obj_inst
     :param user_cols: Dictionary with indices of the attribute columns that are user-related and the column titles.
     :param row_index: Row index of the log.
     :param process_obj_inst_dict: A Dictionary with process object instances as values and their attribute combinations as keys.
-    :param process_obj_counter: An integer making sure the object instance ids are unique.
+    :param obj_counter: An integer making sure the object instance ids are unique.
     :return: A tuple of the modified process_obj_df and the modified log
     """
     obj_type = 'user'
@@ -1600,8 +1606,8 @@ def add_user_objects(log, process_obj_df, user_cols, row_index, process_obj_inst
         att_value = log.iloc[row_index, col_index]
         att_list.append(att_value)
 
-    process_obj_inst, process_obj_inst_dict, process_obj_counter = generate_key(att_list, process_obj_inst_dict,
-                                                                                obj_type, process_obj_counter)
+    process_obj_inst, process_obj_inst_dict, obj_counter = generate_key(att_list, process_obj_inst_dict,
+                                                                        obj_type, obj_counter)
 
     process_obj_df, log = create_new_row_process_obj_df(log, obj_type, row_index, process_obj_inst, process_obj_df,
                                                         user_cols)
@@ -1611,7 +1617,7 @@ def add_user_objects(log, process_obj_df, user_cols, row_index, process_obj_inst
 
 def recognize_obj_instances(log, object_hierarchy, ui_object_synonym, undecided_obj_cols, other_ui_obj_cols_highest,
                  other_ui_obj_cols_second, other_ui_obj_cols_third, other_ui_obj_cols_fourth, val_att_cols,
-                 cont_att_cols, user_cols, unmatched_att_list, process_obj_df):
+                 cont_att_cols, user_cols, unmatched_att_list, process_obj_df, obj_counter):
     """
     Recognizes object instances in a log based on their hierarchy levels and attributes.
 
@@ -1654,9 +1660,6 @@ def recognize_obj_instances(log, object_hierarchy, ui_object_synonym, undecided_
     last_second_obj_inst = []  # for object types on second level
     last_third_obj_inst = []  # for object types on third level
     last_fourth_obj_inst = []  # for object types on fourth level
-
-    obj_counter = 0  # counter to assign ids to the ui object instances
-    process_obj_counter = 0  # counter to assign ids to the process object instances
 
     # loop over the 'main ui object type' column
     for row_index, value in log['main ui object type'].iteritems():
@@ -1927,7 +1930,7 @@ def recognize_obj_instances(log, object_hierarchy, ui_object_synonym, undecided_
 
         # generate process object instances for the user-related objects
         process_obj_df, log = add_user_objects(log, process_obj_df, user_cols, row_index, process_obj_inst_dict,
-                                               process_obj_counter)
+                                               obj_counter)
 
     return log, other_ui_obj_df, process_obj_df, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols
 # </editor-fold>
@@ -2082,5 +2085,31 @@ def create_ui_obj_json(ui_objects_dict, other_ui_obj_df, other_ui_obj_df_cont_at
         }
 
     # write the object dictionary to a JSON file
-    with open('object_output.json', 'w') as f:
+    with open('ui_object_output.json', 'w') as f:
         json.dump(ui_objects_dict, f)
+
+
+def create_process_obj_json(process_obj_df):
+    process_obj_dict = {} # dictionary for process objects
+    att_dict = {} # dictionary for attribute values and their types
+    att_cols = [] # list for attribute column indices
+
+    # starting at index three because the first column is the row index, the second the object instance, and the third the object type
+    for x in range(3, len(process_obj_df.columns)):
+        att_cols.append(x)
+
+    for row_index, row in process_obj_df.iterrows():
+        for col_index in att_cols:
+            att_val = process_obj_df.iloc[row_index, col_index]  # context attribute value
+            att_type = process_obj_df.columns[col_index]  # context attribute type
+            if not pd.isna(att_val):
+                att_dict[att_type] = att_val
+
+        process_obj_dict[row["object instance"]] = {
+            "type": row["object type"],
+            "amap": att_dict,
+        }
+
+        # write the object dictionary to a JSON file
+        with open('process_object_output.json', 'w') as f:
+            json.dump(process_obj_dict, f)
