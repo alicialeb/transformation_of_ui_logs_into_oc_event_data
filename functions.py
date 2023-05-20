@@ -1946,7 +1946,7 @@ def create_event_json(log, val_att_cols):
     event_df = pd.DataFrame()  # df for event related data
     event_instances = []  # list for event instances
     event_val_att_cols = [] # list for the value attribute columns in the new event_df
-    events_dict = {}  # event dictionary to achieve a json structure
+    event_dict = {}  # event dictionary to achieve a json structure
 
     # assign ids to events
     for x in range(1, len(log) + 1):
@@ -1982,16 +1982,14 @@ def create_event_json(log, val_att_cols):
                 val_att_dict[f"{row['object instance']}.{att_type}"] = att_val
 
         # add data to the dictionary
-        events_dict[row["event id"]] = {
+        event_dict[row["event id"]] = {
             "activity": row["activity"],
             "timestamp": row["timestamp"],
             "omap": row["object instance"],
             "vmap": val_att_dict
         }
 
-    # write the event dictionary to a JSON file
-    with open('event_output.json', 'w') as f:
-        json.dump(events_dict, f)
+    return event_dict
 
 
 def create_main_ui_obj_dict(log, cont_att_cols, val_att_cols):
@@ -2084,9 +2082,7 @@ def create_ui_obj_json(ui_objects_dict, other_ui_obj_df, other_ui_obj_df_cont_at
             "omap": part_of
         }
 
-    # write the object dictionary to a JSON file
-    with open('ui_object_output.json', 'w') as f:
-        json.dump(ui_objects_dict, f)
+    return ui_objects_dict
 
 
 def create_process_obj_json(process_obj_df):
@@ -2110,6 +2106,18 @@ def create_process_obj_json(process_obj_df):
             "amap": att_dict,
         }
 
-        # write the object dictionary to a JSON file
-        with open('process_object_output.json', 'w') as f:
-            json.dump(process_obj_dict, f)
+    return process_obj_dict
+
+
+def merge_dicts_and_create_json(event_dict, ui_obj_dict, process_obj_dict):
+
+    oc_dict = {}
+    oc_dict.setdefault('events', event_dict)
+    oc_dict.setdefault('ui_objects', ui_obj_dict)
+    oc_dict.setdefault('process_objects', process_obj_dict)
+
+
+    # write the object dictionary to a JSON file
+    with open('object_centric_event_data_output.json', 'w') as f:
+        json.dump(oc_dict, f)
+

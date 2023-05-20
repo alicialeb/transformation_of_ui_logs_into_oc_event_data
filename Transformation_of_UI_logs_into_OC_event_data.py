@@ -251,14 +251,16 @@ process_obj_df = unify_nan_values(process_obj_df)
 
 # TODO: add process object instances and other UI object instances to event json
 # call function to create the event json file
-create_event_json(log, val_att_cols)
+event_dict = create_event_json(log, val_att_cols)
 
 # call function to create a df suitable to convert to json for the main ui objects
-ui_objects_dict = create_main_ui_obj_dict(log, cont_att_cols, val_att_cols)
+ui_obj_dict = create_main_ui_obj_dict(log, cont_att_cols, val_att_cols)
 
 # call function to create the ui object json file
-create_ui_obj_json(ui_objects_dict, other_ui_obj_df, other_ui_obj_df_cont_att_cols, other_ui_obj_df_val_att_cols)
+ui_obj_dict = create_ui_obj_json(ui_obj_dict, other_ui_obj_df, other_ui_obj_df_cont_att_cols, other_ui_obj_df_val_att_cols)
 
-create_process_obj_json(process_obj_df)
+# call function to create the process object json file
+process_obj_dict = create_process_obj_json(process_obj_df)
 
-# TODO: merge json files to one json file -> idea: put all dictionaries in a dictionary and then convert it to json
+# call function to merge all dictionaries and create the final object-centric event data json file
+merge_dicts_and_create_json(event_dict, ui_obj_dict, process_obj_dict)
