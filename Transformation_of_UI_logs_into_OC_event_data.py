@@ -9,6 +9,10 @@
 
 # <editor-fold desc="Imports">
 import json
+
+import numpy as np
+import pandas as pd
+
 from functions import *
 
 # TODO: restructure code, so it can be run with one click and multiple different parameter settings
@@ -245,15 +249,14 @@ log = unify_nan_values(log)
 other_ui_obj_df = unify_nan_values(other_ui_obj_df)
 process_obj_df = unify_nan_values(process_obj_df)
 
-# TODO: adjust json to new layout
-
 # call function to create the event json file
 create_event_json(log, val_att_cols)
 
-
+# TODO: adjust json to new layout
 object_df = copy.deepcopy(log) # copy log to keep the original one
+ui_objects_dict = {} # ui object dictionary to achieve a json structure
 
-# drop duplicate object instances and keep only the once that occure latest in time
+# drop duplicate object instances and keep only the once that occur latest in time
 object_df = object_df.sort_values('timestamp').drop_duplicates(['object instance'], keep='last').sort_index()
 
 # drop the timestamp column
@@ -262,27 +265,35 @@ object_df = object_df.drop(['timestamp'], axis=1)
 # reset indices, so they start with zero again and don't have gaps
 object_df.reset_index(drop=True, inplace=True)
 
-objects_dict = {}
-att_list = []
+object_df = unify_nan_values(object_df)
+log = unify_nan_values(log)
 
 # convert the df into json format
-for index, row in object_df.iterrows():
+for row_index, row in object_df.iterrows():
     cont_att_dict = {}
     val_att_dict = {}
     part_of = []
 
-    for att in cont_att_cols:
-        if att is not np.NaN:
-            cont_att_dict[att] = row[att]
-    for att in val_att_cols:
-        if att is not np.NaN:
-            val_att_dict[att] = row[att]
+    for col_index in cont_att_cols:
+        cont_att_val = log.iloc[row_index, col_index]  # context attribute value
+        cont_att_type = log.columns[col_index]  # context attribute type
+        if not pd.isna(cont_att_val):
+            cont_att_dict[cont_att_type] = cont_att_val
+    for col_index in val_att_cols:
+        val_att_val = log.iloc[row_index, col_index]  # value attribute value
+        val_att_type = log.columns[col_index]  # value attribute type
+        if not pd.isna(val_att_val):
+            val_att_dict[val_att_type] = val_att_val
 
-    if row["part of"] is not np.NaN:
+    if not pd.isna(row["part of"]):
         part_of.append(row["part of"])
 
-    objects_dict[row["object instance"]] = {
-        "type": row["main ui object type"],
+    obj_type = row["main ui object type"]
+    if pd.isna(obj_type):
+        obj_type = 'unknown'
+
+    ui_objects_dict[row["object instance"]] = {
+        "type": obj_type,
         "cmap": cont_att_dict,
         "vmap": val_att_dict,
         "omap": part_of
@@ -290,6 +301,6 @@ for index, row in object_df.iterrows():
 
 # write the object dictionary to a JSON file
 with open('object_output.json', 'w') as f:
-    json.dump(objects_dict, f)
+    json.dump(ui_objects_dict, f)
 
 # TODO: merge json files to one json file

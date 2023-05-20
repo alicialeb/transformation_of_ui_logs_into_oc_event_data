@@ -183,7 +183,7 @@ def unify_nan_values(log):
 
     log.replace('nan', np.NaN, inplace=True) # replace string 'nan'
     log.replace('', np.NaN, inplace=True) # replace empty strings
-    log = log.fillna(value=np.NaN) # replace None
+    log.fillna(value=np.NaN, inplace=True) # replace None
 
     return log
 # </editor-fold>
@@ -1943,6 +1943,7 @@ def create_event_json(log, val_att_cols):
     event_df = pd.DataFrame()  # df for event related data
     event_instances = []  # list for event instances
     event_val_att_cols = [] # list for the value attribute columns in the new event_df
+    events_dict = {}  # event dictionary to achieve a json structure
 
     # assign ids to events
     for x in range(1, len(log) + 1):
@@ -1960,13 +1961,11 @@ def create_event_json(log, val_att_cols):
     # restructure the df
     for col in log.columns:
         if 'activity' in col:
-            event_df[col] = log.pop(col)
+            event_df[col] = log[col]
         if 'timestamp' in col:
             event_df[col] = log[col]
         if 'object instance' in col:
             event_df[col] = log[col]
-
-    events_dict = {}  # event dictionary to achieve a json structure
 
     # convert timestamp to string, so json can parse it
     event_df['timestamp'] = event_df['timestamp'].astype(str)
