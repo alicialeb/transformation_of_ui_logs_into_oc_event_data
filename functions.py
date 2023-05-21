@@ -1936,17 +1936,18 @@ def recognize_obj_instances(log, object_hierarchy, ui_object_synonym, undecided_
 # </editor-fold>
 
 
-def create_event_json(log, val_att_cols):
+def create_event_dict(log, val_att_cols):
     """
     Creates a json file including the event instances of the log.
 
     :param log: A pandas DataFrame representing the UI log.
     :param val_att_cols: List of columns in the log that are of type value attribute.
+    :return: A dictionary for the event instances that is already in a json friendly format.
     """
     event_df = pd.DataFrame()  # df for event related data
     event_instances = []  # list for event instances
     event_val_att_cols = [] # list for the value attribute columns in the new event_df
-    event_dict = {}  # event dictionary to achieve a json structure
+    events_dict = {}  # event dictionary to achieve a json structure
 
     # assign ids to events
     for x in range(1, len(log) + 1):
@@ -1982,14 +1983,14 @@ def create_event_json(log, val_att_cols):
                 val_att_dict[f"{row['object instance']}.{att_type}"] = att_val
 
         # add data to the dictionary
-        event_dict[row["event id"]] = {
+        events_dict[row["event id"]] = {
             "activity": row["activity"],
             "timestamp": row["timestamp"],
             "omap": row["object instance"],
             "vmap": val_att_dict
         }
 
-    return event_dict
+    return events_dict
 
 
 def create_main_ui_obj_dict(log, cont_att_cols, val_att_cols):
@@ -2048,13 +2049,15 @@ def create_main_ui_obj_dict(log, cont_att_cols, val_att_cols):
 
 
 # convert the df into a json readable format
-def create_ui_obj_json(ui_objects_dict, other_ui_obj_df, other_ui_obj_df_cont_att_cols, other_ui_obj_df_val_att_cols):
+def create_ui_obj_dict(ui_objects_dict, other_ui_obj_df, other_ui_obj_df_cont_att_cols, other_ui_obj_df_val_att_cols):
     """
-    Creates a json file including the ui object instances of the log.
+    Creates a dictionary including the ui object instances of the log.
+
     :param ui_objects_dict: A dictionary for the main UI objects that is already in a json friendly format.
     :param other_ui_obj_df: DataFrame including object instances other than the main object instances.
     :param other_ui_obj_df_cont_att_cols: List of columns in the df that are of type context attribute.
     :param other_ui_obj_df_val_att_cols: List of columns in the df that are of type value attribute.
+    :return: A dictionary for the UI object instances that is already in a json friendly format.
     """
     for row_index, row in other_ui_obj_df.iterrows():
         cont_att_dict = {} # dictionary for context attribute values and their type
@@ -2085,7 +2088,13 @@ def create_ui_obj_json(ui_objects_dict, other_ui_obj_df, other_ui_obj_df_cont_at
     return ui_objects_dict
 
 
-def create_process_obj_json(process_obj_df):
+def create_process_obj_dict(process_obj_df):
+    """
+    Creates a dictionary including the process object instances of the log.
+
+    :param process_obj_df: A pandas DataFrame for the process object instances and their attributes.
+    :return: A dictionary with the process object instances ready to be converted into a json file.
+    """
     process_obj_dict = {} # dictionary for process objects
     att_dict = {} # dictionary for attribute values and their types
     att_cols = [] # list for attribute column indices
@@ -2109,15 +2118,21 @@ def create_process_obj_json(process_obj_df):
     return process_obj_dict
 
 
-def merge_dicts_and_create_json(event_dict, ui_obj_dict, process_obj_dict):
+def merge_dicts_and_create_json(events_dict, ui_obj_dict, process_obj_dict):
+    """
+    Merges the dictionaries and creates a json file to write the output dictionary to.
 
-    oc_dict = {}
-    oc_dict.setdefault('events', event_dict)
-    oc_dict.setdefault('ui_objects', ui_obj_dict)
-    oc_dict.setdefault('process_objects', process_obj_dict)
+    :param events_dict: A dictionary for the event instances that is already in a json friendly format.
+    :param ui_obj_dict: A dictionary for the UI object instances that is already in a json friendly format.
+    :param process_obj_dict: A dictionary for the process object instances that is already in a json friendly format.
+    """
+    oc_dict = {} # object-centric event data dictionary that combines all other element type dictionaries
+    oc_dict.setdefault('events', events_dict) # add event dictionary
+    oc_dict.setdefault('ui_objects', ui_obj_dict) # add UI object dictionary
+    oc_dict.setdefault('process_objects', process_obj_dict) # add process object dictionary
 
 
-    # write the object dictionary to a JSON file
+    # create a new json file and write the dictionary to the file
     with open('object_centric_event_data_output.json', 'w') as f:
         json.dump(oc_dict, f)
 
