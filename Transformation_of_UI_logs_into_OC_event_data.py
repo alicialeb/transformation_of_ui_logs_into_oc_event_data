@@ -200,8 +200,9 @@ selected_cols, cont_att_cols, val_att_cols, obj_type_cols, main_obj_type_cols = 
 
 log['object instance'] = None # add column for object instances
 log['part of'] = None # add column to indicate next higher object hierarchy level
+log['related ui object'] = None # add column for the ui objects that are also related to the event but not to the main ui object
 
-# add object instance column to the slected_cols list to loop over this column too in the following
+# add object instance column to the selected_cols list to loop over this column too in the following
 selected_cols.append(log.columns.get_loc('object instance'))
 
 # call function to get a list with columns that potentially include process objects types in some rows
@@ -239,9 +240,8 @@ log = unify_nan_values(log)
 other_ui_obj_df = unify_nan_values(other_ui_obj_df)
 process_obj_df = unify_nan_values(process_obj_df)
 
-# TODO: add process object instances and other UI object instances to event json
 # call function to create the event json file
-event_dict = create_event_dict(log, val_att_cols)
+event_dict = create_event_dict(log, val_att_cols, process_obj_df)
 
 # call function to create a df suitable to convert to json for the main ui objects
 ui_obj_dict = create_main_ui_obj_dict(log, cont_att_cols, val_att_cols)

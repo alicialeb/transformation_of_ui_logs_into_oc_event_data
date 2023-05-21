@@ -1169,11 +1169,12 @@ def get_attribute_values(log, row_index, combined_att_list, val_att_cols, cont_a
     return att_list, att_col_indices_list
 
 
-def add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web_inst, last_app_inst, last_second_obj_inst,
+def add_higher_hierarchy_instances(log, object_type, att_list, row_index, obj_level, last_web_inst, last_app_inst, last_second_obj_inst,
                                    last_third_obj_inst, obj_is_main, part_of=None):
     """
     Adds object instances of higher hierarchy levels to the attribute combination, so the object instance can be determined.
 
+    :param object_type: String with the object type.
     :param log: A pandas DataFrame representing the UI log.
     :param att_list: A list with the attribute combination needed to identify object instances.
     :param row_index: Row index of the input log.
@@ -1197,12 +1198,29 @@ def add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web
             if obj_is_main is None:
                 part_of = None
 
+                if object_type == 'website':
+                    # check if last_web_inst exists and if it is in the same row
+                    if last_web_inst:
+                        if row_index == last_web_inst[1]:
+                            log.loc[row_index, 'related ui object'] = last_web_inst[0]
+
+                elif object_type == 'application':
+                    # check if last_app_inst exists and if it is in the same row
+                    if last_app_inst:
+                        if row_index == last_app_inst[1]:
+                            log.loc[row_index, 'related ui object'] = last_app_inst[0]
+
         elif obj_level == 'obj_second_level' or obj_level == 'obj_third_level':
             # if list is not empty, append the object instance included in it
             if last_app_inst:
                 att_list.append(last_app_inst[0])
                 if obj_is_main is True:
                     log.loc[row_index, 'part of'] = last_app_inst[0]
+
+                    # check if last_web_inst exists and if it is in the same row
+                    if last_web_inst:
+                        if row_index == last_web_inst[1]:
+                            log.loc[row_index, 'related ui object'] = last_web_inst[0]
                 else:
                     part_of = last_app_inst[0]
 
@@ -1212,6 +1230,11 @@ def add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web
                     att_list.append(last_second_obj_inst[0])
                     if obj_is_main is True:
                         log.loc[row_index, 'part of'] = last_second_obj_inst[0]
+
+                        # check if last_web_inst exists and if it is in the same row
+                        if last_web_inst:
+                            if row_index == last_web_inst[1]:
+                                log.loc[row_index, 'related ui object'] = last_web_inst[0]
                     else:
                         part_of = last_second_obj_inst[0]
 
@@ -1228,6 +1251,11 @@ def add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web
                     att_list.append(last_third_obj_inst[0])
                     if obj_is_main:
                         log.loc[row_index, 'part of'] = last_third_obj_inst[0]
+
+                        # check if last_web_inst exists and if it is in the same row
+                        if last_web_inst:
+                            if row_index == last_web_inst[1]:
+                                log.loc[row_index, 'related ui object'] = last_web_inst[0]
                     else:
                         part_of = last_third_obj_inst[0]
 
@@ -1237,6 +1265,11 @@ def add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web
                         att_list.append(last_web_inst[0])
                         if obj_is_main:
                             log.loc[row_index, 'part of'] = last_web_inst[0]
+
+                            # check if last_app_insts exist and if it is in the same row
+                            if last_app_inst:
+                                if row_index == last_app_inst[1]:
+                                    log.loc[row_index, 'related ui object'] = last_app_inst[0]
                         else:
                             part_of = last_web_inst[0]
 
@@ -1246,6 +1279,11 @@ def add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web
                     att_list.append(last_web_inst[0])
                     if obj_is_main:
                         log.loc[row_index, 'part of'] = last_web_inst[0]
+
+                        # check if last_app_inst exists and if it is in the same row
+                        if last_app_inst:
+                            if row_index == last_app_inst[1]:
+                                log.loc[row_index, 'related ui object'] = last_app_inst[0]
                     else:
                         part_of = last_web_inst[0]
 
@@ -1253,6 +1291,11 @@ def add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web
                 else:
                     if obj_is_main:
                         log.loc[row_index, 'part of'] = last_app_inst[0]
+
+                        # check if last_web_inst exists and if it is in the same row
+                        if last_web_inst:
+                            if row_index == last_web_inst[1]:
+                                log.loc[row_index, 'related ui object'] = last_web_inst[0]
                     else:
                         part_of = last_app_inst[0]
 
@@ -1485,7 +1528,7 @@ def identify_main_object_instances(log, object_instances_dict, row_index, value,
 
     # call function to add value to the 'part of' column
     obj_is_main = True
-    att_list, log = add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web_inst,
+    att_list, log = add_higher_hierarchy_instances(log, value_term, att_list, row_index, obj_level, last_web_inst,
                                                    last_app_inst, last_second_obj_inst, last_third_obj_inst,
                                                    obj_is_main)
 
@@ -1553,8 +1596,8 @@ def identify_other_obj_inst(log, object_hierarchy, other_ui_obj_df, object_insta
 
         # call function to add value to the 'part of' variable
         obj_is_main = None
-        part_of, att_list, log = add_higher_hierarchy_instances(log, att_list, row_index, obj_level, last_web_inst,
-                                                                last_app_inst, last_second_obj_inst,
+        part_of, att_list, log = add_higher_hierarchy_instances(log, obj, att_list, row_index, obj_level,
+                                                                last_web_inst, last_app_inst, last_second_obj_inst,
                                                                 last_third_obj_inst, obj_is_main, part_of)
 
         # call function to form a key from the attribute combination to get the object instance
@@ -1639,6 +1682,7 @@ def recognize_obj_instances(log, object_hierarchy, ui_object_synonym, undecided_
     :param user_cols: Dictionary with indices of the attribute columns that are user-related and the column titles.
     :param unmatched_att_list: List with attribute columns that have not been assigned an object type yet.
     :param process_obj_df: A pandas DataFrame for the process object instances and their attributes.
+    :param obj_counter: An integer making sure the object instance ids are unique.
     :return: A tuple of the modified versions of the log, the other_ui_obj_df and the process_obj_df.
     """
     object_instances_dict = {}  # dictionary to save ui object instances and their unique identifiers
@@ -1937,18 +1981,22 @@ def recognize_obj_instances(log, object_hierarchy, ui_object_synonym, undecided_
 
 
 # <editor-fold desc="3. Element Linkage">
-def create_event_dict(log, val_att_cols):
+def create_event_dict(log, val_att_cols, process_obj_df):
     """
     Creates a json file including the event instances of the log.
 
     :param log: A pandas DataFrame representing the UI log.
     :param val_att_cols: List of columns in the log that are of type value attribute.
+    :param process_obj_df: A pandas DataFrame for the process object instances that is already in a json friendly format.
     :return: A dictionary for the event instances that is already in a json friendly format.
     """
     event_df = pd.DataFrame()  # df for event related data
     event_instances = []  # list for event instances
     event_val_att_cols = [] # list for the value attribute columns in the new event_df
     events_dict = {}  # event dictionary to achieve a json structure
+
+    # save the process objects in a dictionary with the row_index as key
+    process_obj_dict = process_obj_df.groupby('row index')['object instance'].apply(list).to_dict()
 
     # assign ids to events
     for x in range(1, len(log) + 1):
@@ -1971,24 +2019,40 @@ def create_event_dict(log, val_att_cols):
             event_df[col] = log[col]
         if 'object instance' in col:
             event_df[col] = log[col]
+        if 'related ui object' in col:
+            event_df[col] = log[col]
 
     # convert timestamp to string, so json can parse it
     event_df['timestamp'] = event_df['timestamp'].astype(str)
 
     for row_index, row in event_df.iterrows():
         val_att_dict = {}  # dictionary to save the value attribute value and the object the attribute belongs to
+        process_obj_list = []
+        related_ui_obj_list = []
         for col_index in event_val_att_cols:
             att_val = event_df.iloc[row_index, col_index] # value attribute value
             att_type = event_df.columns[col_index] # value attribute type
             if att_val is not np.NaN:
                 val_att_dict[f"{row['object instance']}.{att_type}"] = att_val
 
+        # loop over process objects and add the ones with matching saved index to the list
+        if row_index in process_obj_dict:
+            for process_obj in process_obj_dict[row_index]:
+                if not pd.isna(process_obj):
+                    process_obj_list.append(process_obj)
+
+        related_ui_obj = row["related ui object"]
+        if not pd.isna(related_ui_obj):
+            related_ui_obj_list.append(related_ui_obj)
+
         # add data to the dictionary
         events_dict[row["event id"]] = {
             "activity": row["activity"],
             "timestamp": row["timestamp"],
             "omap": row["object instance"],
-            "vmap": val_att_dict
+            "vmap": val_att_dict,
+            "umap": related_ui_obj_list,
+            "pmap": process_obj_list
         }
 
     return events_dict
