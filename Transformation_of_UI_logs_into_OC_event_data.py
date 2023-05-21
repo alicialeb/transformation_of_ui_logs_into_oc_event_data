@@ -1,18 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# Assumptions: 
-# - log is sorted by the timestamp starting with the earliest point in time.
-# - if the log is already split into cases, the case id is in the first column of the log.
-# - every UI log has some sort of event or activity column.
-# - object types that cannot be recognized belong to the fourth level.
-
 # <editor-fold desc="Imports">
-import json
-
-import numpy as np
-import pandas as pd
-
 from functions import *
 
 # TODO: restructure code, so it can be run with one click and multiple different parameter settings
@@ -92,7 +81,7 @@ obj_fourth_level = ['field', 'button', 'image']
 # </editor-fold>
 
 
-# <editor-fold desc="Ration Thresholds">
+# <editor-fold desc="Uniqueness- and Completeness-Ratio Thresholds">
 # TODO: optimize thresholds
 # ration thresholds determining the ratio of unique values a column should hold
 threshold_ui_obj = 0.15 # for ui object columns
@@ -244,6 +233,7 @@ log, other_ui_obj_df, process_obj_df, other_ui_obj_df_val_att_cols, other_ui_obj
 # </editor-fold>
 
 
+# <editor-fold desc="3. Element Linkage">
 # unify nan values
 log = unify_nan_values(log)
 other_ui_obj_df = unify_nan_values(other_ui_obj_df)
@@ -265,3 +255,4 @@ process_obj_dict = create_process_obj_dict(process_obj_df)
 
 # call function to merge all dictionaries and create the final object-centric event data json file
 merge_dicts_and_create_json(event_dict, ui_obj_dict, process_obj_dict)
+# </editor-fold>

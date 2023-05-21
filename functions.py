@@ -1936,6 +1936,7 @@ def recognize_obj_instances(log, object_hierarchy, ui_object_synonym, undecided_
 # </editor-fold>
 
 
+# <editor-fold desc="3. Element Linkage">
 def create_event_dict(log, val_att_cols):
     """
     Creates a json file including the event instances of the log.
@@ -2131,8 +2132,8 @@ def merge_dicts_and_create_json(events_dict, ui_obj_dict, process_obj_dict):
     oc_dict.setdefault('ui_objects', ui_obj_dict) # add UI object dictionary
     oc_dict.setdefault('process_objects', process_obj_dict) # add process object dictionary
 
-
     # create a new json file and write the dictionary to the file
     with open('object_centric_event_data_output.json', 'w') as f:
         json.dump(oc_dict, f)
+# </editor-fold>
 
