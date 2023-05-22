@@ -8,6 +8,7 @@ import tkinter as tk
 from tkinter import filedialog as fd
 import re
 import nltk
+from nltk.stem import WordNetLemmatizer
 import copy
 import json
 
@@ -914,7 +915,7 @@ def find_process_objects(log, cont_att_cols, nouns, process_obj_df):
     camel_underscore_regex = '(?<=[a-z])(?=[A-Z])|(?<![A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=[0-9]|[_]|[.]|[-])'
 
     process_obj_inst_dict = {}
-    obj_counter = 0 # counter to assure that ass object instance ids are unique
+    obj_counter = 1 # counter to assure that ass object instance ids are unique
 
     for row_index, row in log.iloc[:, cont_att_cols].iterrows():
         # list for the ui objects
@@ -949,6 +950,44 @@ def find_process_objects(log, cont_att_cols, nouns, process_obj_df):
             process_obj_df, log = create_new_row_process_obj_df(log, process_obj, row_index, process_obj_inst, process_obj_df)
 
     return process_obj_df, obj_counter
+
+
+def find_process_objects_new(log, cont_att_cols, process_obj_df):
+
+    # regex that recognized camel case
+    camel_underscore_regex = '(?<=[a-z])(?=[A-Z])|(?<![A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=[0-9]|[_]|[.]|[-])'
+
+    process_obj_inst_dict = {}
+    obj_counter = 1  # counter to assure that ass object instance ids are unique
+
+    for row_index, row in log.iloc[:, cont_att_cols].iterrows():
+        # list for the ui objects
+        process_obj_list = []
+
+        # loop over column values
+        for col_name, value in row.iteritems():
+
+            # unify the string format first
+            value = str(value).strip()
+            if pd.isna(value):
+                break
+            else:
+                term = [word for word in re.split(camel_underscore_regex, value)]
+                new_value = " ".join(term).lower()
+
+            stem_value = WordNetLemmatizer().lemmatize(new_value)
+
+            tagged_words = nltk.pos_tag([stem_value])
+
+            process_obj_list.extend([word for word, tag in tagged_words if tag.startswith('NN')])
+
+        for process_obj in process_obj_list:
+            process_obj_inst = process_obj_inst_dict[process_obj]
+            # call function to create a new row in the process_obj_df
+            process_obj_df, log = create_new_row_process_obj_df(log, process_obj, row_index, process_obj_inst, process_obj_df)
+
+    return process_obj_df, obj_counter
+
 
 
 def combine_ui_obj_type_dicts(ui_obj_att_cols, att_cols_obj_unclear):
@@ -1353,15 +1392,15 @@ def generate_key(att_list, object_instances_dict, value, obj_counter):
     if len(att_list) > 1:
         att_combi = tuple(att_list)
         if att_combi not in object_instances_dict:
-            obj_counter += 1
             object_instances_dict.setdefault(att_combi, f'{value}_{obj_counter}')
+            obj_counter += 1
         obj_inst = object_instances_dict[att_combi]
 
     elif len(att_list) == 1:
         att_val = att_list[0]
         if att_val not in object_instances_dict and att_val is not np.NaN:
-            obj_counter += 1
             object_instances_dict.setdefault(att_val, f'{value}_{obj_counter}')
+            obj_counter += 1
         obj_inst = object_instances_dict[att_val]
 
     # if the att_list is empty, no object instance should be created
@@ -1649,13 +1688,17 @@ def add_user_objects(log, process_obj_df, user_cols, row_index, process_obj_inst
         att_value = log.iloc[row_index, col_index]
         att_list.append(att_value)
 
+    # as user always exists; so if there are no attributes
+    if not att_list:
+        att_list.append('user')
+
     process_obj_inst, process_obj_inst_dict, obj_counter = generate_key(att_list, process_obj_inst_dict,
                                                                         obj_type, obj_counter)
 
     process_obj_df, log = create_new_row_process_obj_df(log, obj_type, row_index, process_obj_inst, process_obj_df,
                                                         user_cols)
 
-    return process_obj_df, log
+    return process_obj_df, log, obj_counter
 
 
 def recognize_obj_instances(log, object_hierarchy, ui_object_synonym, undecided_obj_cols, other_ui_obj_cols_highest,
@@ -1973,7 +2016,7 @@ def recognize_obj_instances(log, object_hierarchy, ui_object_synonym, undecided_
                 other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols)
 
         # generate process object instances for the user-related objects
-        process_obj_df, log = add_user_objects(log, process_obj_df, user_cols, row_index, process_obj_inst_dict,
+        process_obj_df, log, obj_counter = add_user_objects(log, process_obj_df, user_cols, row_index, process_obj_inst_dict,
                                                obj_counter)
 
     return log, other_ui_obj_df, process_obj_df, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols
@@ -2197,7 +2240,7 @@ def merge_dicts_and_create_json(events_dict, ui_obj_dict, process_obj_dict):
     oc_dict.setdefault('process_objects', process_obj_dict) # add process object dictionary
 
     # create a new json file and write the dictionary to the file
-    with open('object_centric_event_data_output.json', 'w') as f:
+    with open('object_centric_event_data_output_example.json', 'w') as f:
         json.dump(oc_dict, f)
 # </editor-fold>
 

@@ -8,11 +8,11 @@ from functions import *
 # call the import_log function to read a ui log chosen by the user
 # log, file_path = import_log()
 
-file_path = r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\StudentRecord_preprocessed.csv'
-log = pd.read_csv(file_path)
+# file_path = r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\StudentRecord_preprocessed.csv'
+# log = pd.read_csv(file_path)
 
-# file_path = r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\example_ui_log - Copy.xlsx'
-# log = pd.read_excel(file_path)
+file_path = r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\example_ui_log - Copy.xlsx'
+log = pd.read_excel(file_path)
 
 # import action label list as DataFrame taken from https://carbondesignsystem.com/guidelines/content/action-labels/ and
 # supplemented with own ideas (confirm, login)
@@ -213,6 +213,7 @@ process_obj_df = pd.DataFrame(columns=['row index', 'object instance', 'object t
 
 # call function to find process objects in the log
 process_obj_df, obj_counter = find_process_objects(log, pot_process_obj_cols, nouns, process_obj_df)
+#process_obj_df, obj_counter = find_process_objects_new(log, cont_att_cols, process_obj_df)
 
 # call function to combine the ui object type dictionaries in one dictionary
 other_ui_obj_cols = combine_ui_obj_type_dicts(ui_obj_att_cols, att_cols_obj_unclear)
