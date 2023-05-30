@@ -27,9 +27,9 @@ nouns = pd.read_csv(r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\
 # <editor-fold desc="Pre-defined Dictionaries and Lists">
 # dictionary with pre-defined object types and their synonyms
 ui_object_synonym = {
-    'website': ['website', 'site', 'page', 'web page', 'webpage', 'url', 'link', 'href', 'browser', 'chrome', 'firefox',
+    'website': ['website', 'site', 'page', 'web page', 'webpage', 'url', 'link', 'href'],
+    'application': ['application', 'app', 'program', 'tool', 'system', 'excel', 'power point' 'erp', 'browser', 'chrome', 'firefox',
                 'opera', 'safari', 'microsoft edge'],
-    'application': ['application', 'app', 'program', 'tool', 'system', 'excel', 'erp'],
     'file': ['file', 'document', 'workbook'],
     'sheet': ['sheet', 'page'],
     'field': ['field', 'cell', 'value'],
@@ -40,7 +40,7 @@ ui_object_synonym = {
 
 # dictionary with pre-defined attribute types and their synonyms
 attribute_synonym = {
-    'url': ['url', 'web page', 'site', 'link', 'page', 'href'],
+    'url': ['url', 'site', 'link', 'page', 'href'],
     'host name': ['host name', 'host'],
     'page name': ['page name', 'page title'],
     'application name': ['application name', 'application', 'app', 'program'],

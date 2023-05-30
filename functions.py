@@ -2092,7 +2092,7 @@ def create_event_dict(log, val_att_cols, process_obj_df):
         events_dict[row["event id"]] = {
             "activity": row["activity"],
             "timestamp": row["timestamp"],
-            "omap": row["object instance"],
+            "main object": row["object instance"],
             "vmap": val_att_dict,
             "umap": related_ui_obj_list,
             "pmap": process_obj_list
