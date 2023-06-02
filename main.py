@@ -3,16 +3,54 @@
 
 # <editor-fold desc="Imports">
 from functions import *
+import sys
+import os
 
-# TODO: restructure code, so it can be run with one click and multiple different parameter settings
-# call the import_log function to read a ui log chosen by the user
-# log, file_path = import_log()
+# TODO: optimize thresholds
+# retrieve command-line arguments
+args = sys.argv[1:]
 
-# file_path = r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\StudentRecord_preprocessed.csv'
-# log = pd.read_csv(file_path)
+# if only the file path is handed over, use default parameters
+if len(args) == 1:
+    # check if the argument is a file path with valid extensions
+    file_path = args[0]
+    # check if the file format is correct
+    if not file_path.endswith('.xls') and not file_path.endswith('.xlsx') and not file_path.endswith('.csv'):
+        raise ValueError("Invalid file path provided. Please choose a file of type csv, xls, or xlsx instead.")
 
-file_path = r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\example_ui_log - Copy.xlsx'
-log = pd.read_excel(file_path)
+    # use default parameter values
+    threshold_ui_obj = 0.15  # for ui object columns
+    threshold_act = 0.2  # for activity columns
+    threshold_cont_att = 0.5  # for context attribute columns
+    threshold_val_att = 0.5  # for value attribute columns
+    threshold_timestamp = 1  # for timestamp column
+    threshold_compl = 0.95  # determines how complete a column should be
+
+# if parameters are handed over, assign them to the ration thresholds determining the ratio of unique values a column should hold
+elif len(args) == 7:
+    file_path = args[0]
+    threshold_ui_obj = float(args[1]) # for ui object columns
+    threshold_act = float(args[2]) # for activity columns
+    threshold_cont_att = float(args[3]) # for context attribute columns
+    threshold_val_att = float(args[4]) # for value attribute columns
+    threshold_timestamp = float(args[5]) # for timestamp column
+    threshold_compl = float(args[6]) # determines how complete a column should be
+
+else:
+    print("Usage: python main.py [<file_path> <threshold_ui_object> <threshold_activity> <threshold_context_attribute> <threshold_value_attribute> <threshold_timestamp> <threshold_col_completeness>]")
+    sys.exit(1)
+
+# handle specific file paths "example_ui_log.xlsx" or "student_record.csv"
+if file_path == "example_ui_log.xlsx" or file_path == "student_record.csv":
+    file_path = os.path.join(os.path.dirname(__file__), "datasets", file_path)
+
+# check if the file format is correct
+if file_path.endswith('.xls') or file_path.endswith('.xlsx'):
+    log = pd.read_excel(file_path)
+elif file_path.endswith('.csv'):
+    log = pd.read_csv(file_path)
+else:
+    raise ValueError("Unsupported file format. Please choose a file of type csv, xls, or xlsx instead.")
 
 # import action label list as DataFrame taken from https://carbondesignsystem.com/guidelines/content/action-labels/ and
 # supplemented with own ideas (confirm, login)
@@ -78,18 +116,6 @@ obj_highest_level = ['website', 'application']
 obj_second_level = ['file']
 obj_third_level = ['sheet']
 obj_fourth_level = ['field', 'button', 'image']
-# </editor-fold>
-
-
-# <editor-fold desc="Uniqueness- and Completeness-Ratio Thresholds">
-# TODO: optimize thresholds
-# ration thresholds determining the ratio of unique values a column should hold
-threshold_ui_obj = 0.15 # for ui object columns
-threshold_act = 0.2 # for activity columns
-threshold_cont_att = 0.5 # for context attribute columns
-threshold_val_att = 1 - threshold_cont_att # for value attribute columns
-threshold_timestamp = 1 # for timestamp column
-threshold_compl = 0.95 # determines how complete a column should be
 # </editor-fold>
 
 
