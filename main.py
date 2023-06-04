@@ -54,9 +54,9 @@ import os
 # else:
 #     raise ValueError("Unsupported file format. Please choose a file of type csv, xls, or xlsx instead.")
 
-#log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\example_ui_log.xlsx')
+log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\example_ui_log.xlsx')
 
-log = pd.read_csv(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\student_record.csv')
+#log = pd.read_csv(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\student_record.csv')
 
 threshold_ui_obj = 0.15  # for ui object columns
 threshold_act = 0.2  # for activity columns
@@ -251,8 +251,8 @@ pot_process_obj_cols = get_potential_process_obj_cols(cont_att_cols, url_match_c
 process_obj_df = pd.DataFrame(columns=['row index', 'object instance', 'object type'])
 
 # call function to find process objects in the log
-process_obj_df, obj_counter = find_process_objects(log, pot_process_obj_cols, nouns, process_obj_df)
-#process_obj_df, obj_counter = find_process_objects_new(log, cont_att_cols, process_obj_df)
+process_obj_df = find_process_objects(log, pot_process_obj_cols, nouns, process_obj_df)
+#process_obj_df = find_process_objects_new(log, cont_att_cols, process_obj_df)
 
 # call function to combine the ui object type dictionaries in one dictionary
 other_ui_obj_cols = combine_ui_obj_type_dicts(ui_obj_att_cols, att_cols_obj_unclear)
@@ -266,11 +266,10 @@ unmatched_att_list = get_unmatched_att_cols(cont_att_cols, val_att_cols, ui_obj_
 other_ui_obj_cols_highest, other_ui_obj_cols_second, other_ui_obj_cols_third, other_ui_obj_cols_fourth, undecided_obj_cols = categorize_other_ui_obj(
     other_ui_obj_cols, object_hierarchy)
 
-log, other_ui_obj_df, process_obj_df, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = recognize_obj_instances(log, object_hierarchy, ui_object_synonym,
-                                                               undecided_obj_cols, other_ui_obj_cols_highest,
-                                                               other_ui_obj_cols_second, other_ui_obj_cols_third,
-                                                               other_ui_obj_cols_fourth, val_att_cols, cont_att_cols,
-                                                               user_cols, unmatched_att_list, process_obj_df, obj_counter)
+log, other_ui_obj_df, process_obj_df, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols = recognize_obj_instances(
+    log, object_hierarchy, ui_object_synonym, undecided_obj_cols, other_ui_obj_cols_highest, other_ui_obj_cols_second,
+    other_ui_obj_cols_third, other_ui_obj_cols_fourth, val_att_cols, cont_att_cols, user_cols, unmatched_att_list,
+    process_obj_df)
 # </editor-fold>
 
 
@@ -296,5 +295,3 @@ process_obj_dict = create_process_obj_dict(process_obj_df)
 # call function to merge all dictionaries and create the final object-centric event data json file
 merge_dicts_and_create_json(event_dict, ui_obj_dict, process_obj_dict)
 # </editor-fold>
-
-# TODO figure out why for example log browser is a value attribute assigned to website instead of a context attribute for an application
