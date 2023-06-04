@@ -1,5 +1,5 @@
 {
-  "uiObjects": {
+  "ui_objects": {
     "link_1": {
       "type": "link", 
       "cmap": {
@@ -148,7 +148,7 @@
     }
   },
 
-  "processObjects": {
+  "process_objects": {
     "user_1": {
       "type": "user", 
       "amap": {

@@ -9,21 +9,11 @@ from tkinter import filedialog as fd
 import re
 import nltk
 from nltk.stem import WordNetLemmatizer
+from nltk.corpus import wordnet
+from nltk.tag import pos_tag
 import copy
 import json
 
-class WordCounter:
-    def __init__(self):
-        self.counts = {}
-
-    def get_next_count(self, word):
-        if word in self.counts:
-            self.counts[word] += 1
-        else:
-            self.counts[word] = 1
-        return self.counts[word]
-
-counter = WordCounter()
 
 def import_log():
     """
@@ -66,6 +56,19 @@ def import_log():
 
 
 # <editor-fold desc="Preprocessing">
+class WordCounter:
+    def __init__(self):
+        self.counts = {}
+
+    def get_next_count(self, word):
+        if word in self.counts:
+            self.counts[word] += 1
+        else:
+            self.counts[word] = 1
+        return self.counts[word]
+
+counter = WordCounter()
+
 def delete_cases(log):
     """
     Delete the 'case' column from the log DataFrame if it exists.
@@ -911,6 +914,16 @@ def create_new_row_process_obj_df(log, obj_type, log_row_index, obj_inst, proces
 
     return process_obj_df, log
 
+def is_dictionary_noun(word):
+    """
+
+    :param word:
+    :return:
+    """
+    synsets = wordnet.synsets(word)
+
+    return any(synset.pos() in ['n', 'N'] for synset in synsets)
+
 
 # find process object types in the log; only the context attribute columns are interesting here
 def find_process_objects(log, cont_att_cols, nouns, process_obj_df):
@@ -935,23 +948,22 @@ def find_process_objects(log, cont_att_cols, nouns, process_obj_df):
         # loop over column values
         for col_name, value in row.iteritems():
 
-            # unify the string format first
-            value = str(value).strip()
-            if value is np.NaN:
+            if pd.isna(value):
                 break
             else:
+                value = str(value).strip() # unify the string format first
                 term = [word for word in re.split(camel_underscore_regex, value)]
                 new_value = " ".join(term).lower()
                 str(new_value).strip()
 
             stem_value = nltk.stem.WordNetLemmatizer().lemmatize(str(new_value))
 
-            # check if the value is in the noun list
-            if stem_value in nouns:
+            tagged_words = pos_tag([stem_value])
+            pos = tagged_words[0][1]
+
+            if is_dictionary_noun(stem_value):
                 if value not in process_obj_list:
                     process_obj_list.append(value)
-                    # real process object instance can't be determined since attributes can't be assigned to the objects
-                    #   so every process object that has the same name gets the same object instance assigned
                     process_obj_inst_dict.setdefault(value, f'{value}_{counter.get_next_count(value)}')
 
         for process_obj in process_obj_list:
@@ -960,43 +972,6 @@ def find_process_objects(log, cont_att_cols, nouns, process_obj_df):
             process_obj_df, log = create_new_row_process_obj_df(log, process_obj, row_index, process_obj_inst, process_obj_df)
 
     return process_obj_df
-
-
-def find_process_objects_new(log, cont_att_cols, process_obj_df):
-
-    # regex that recognized camel case
-    camel_underscore_regex = '(?<=[a-z])(?=[A-Z])|(?<![A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=[0-9]|[_]|[.]|[-])'
-
-    process_obj_inst_dict = {}
-
-    for row_index, row in log.iloc[:, cont_att_cols].iterrows():
-        # list for the ui objects
-        process_obj_list = []
-
-        # loop over column values
-        for col_name, value in row.iteritems():
-
-            # unify the string format first
-            value = str(value).strip()
-            if pd.isna(value):
-                break
-            else:
-                term = [word for word in re.split(camel_underscore_regex, value)]
-                new_value = " ".join(term).lower()
-
-            stem_value = WordNetLemmatizer().lemmatize(new_value)
-
-            tagged_words = nltk.pos_tag([stem_value])
-
-            process_obj_list.extend([word for word, tag in tagged_words if tag.startswith('NN')])
-
-        for process_obj in process_obj_list:
-            process_obj_inst = process_obj_inst_dict[process_obj]
-            # call function to create a new row in the process_obj_df
-            process_obj_df, log = create_new_row_process_obj_df(log, process_obj, row_index, process_obj_inst, process_obj_df)
-
-    return process_obj_df
-
 
 
 def combine_ui_obj_type_dicts(ui_obj_att_cols, att_cols_obj_unclear):
@@ -2103,11 +2078,14 @@ def create_main_ui_obj_dict(log, cont_att_cols, val_att_cols):
     object_df = copy.deepcopy(log) # copy log to keep the original one
     ui_objects_dict = {} # ui object dictionary to achieve a json structure
 
+    # drop related ui object column because it is not relevant for the ui object
+    object_df.drop('related ui object', axis=1, inplace=True)
+
     # drop duplicate object instances and keep only the once that occur latest in time
     object_df = object_df.sort_values('timestamp').drop_duplicates(['object instance'], keep='last').sort_index()
 
     # drop the timestamp column
-    object_df = object_df.drop(['timestamp'], axis=1)
+    object_df.drop(['timestamp'], axis=1, inplace=True)
 
     # reset indices, so they start with zero again and don't have gaps
     object_df.reset_index(drop=True, inplace=True)
@@ -2119,13 +2097,15 @@ def create_main_ui_obj_dict(log, cont_att_cols, val_att_cols):
         part_of = [] # list for ui object instances the main ui object is part of
 
         for col_index in cont_att_cols:
-            cont_att_val = log.iloc[row_index, col_index]  # context attribute value
-            cont_att_type = log.columns[col_index]  # context attribute type
+            col_name = log.columns[col_index]
+            cont_att_val = object_df.loc[row_index, col_name]  # context attribute value
+            cont_att_type = col_name  # context attribute type
             if not pd.isna(cont_att_val):
                 cont_att_dict[cont_att_type] = cont_att_val
         for col_index in val_att_cols:
-            val_att_val = log.iloc[row_index, col_index]  # value attribute value
-            val_att_type = log.columns[col_index]  # value attribute type
+            col_name = log.columns[col_index]
+            val_att_val = object_df.loc[row_index, col_name]  # value attribute value
+            val_att_type = col_name  # value attribute type
             if not pd.isna(val_att_val):
                 val_att_dict[val_att_type] = val_att_val
 
