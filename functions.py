@@ -685,8 +685,8 @@ def get_column_types(log, column_type_dictionary, column_indices, col_compl_dict
         for col in column_indices:
             # check if the column is also in the timestamp_key list
             if col in columns:
-                # check if column includes 100% unique values, since every timestamp in a log should be unique
-                if ratio_dictionary[col] == threshold_timestamp:
+                # check if column includes nearly 100% unique values, since every timestamp in a log should be unique
+                if ratio_dictionary[col] > threshold_timestamp:
                     column_type_dictionary.setdefault(col, 'timestamp')
                     # remove this index from the list because a type has been assigned
                     column_indices.remove(col)

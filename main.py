@@ -24,22 +24,22 @@ import os
 #     threshold_ui_obj = 0.15  # for ui object columns
 #     threshold_act = 0.2  # for activity columns
 #     threshold_cont_att = 0.5  # for context attribute columns
-#     threshold_val_att = 0.5  # for value attribute columns
+#     threshold_val_att = threshold_cont_att  # for value attribute columns
 #     threshold_timestamp = 1  # for timestamp column
 #     threshold_compl = 0.95  # determines how complete a column should be
 #
 # # if parameters are handed over, assign them to the ration thresholds determining the ratio of unique values a column should hold
-# elif len(args) == 7:
+# elif len(args) == 6:
 #     file_path = args[0]
 #     threshold_ui_obj = float(args[1]) # for ui object columns
 #     threshold_act = float(args[2]) # for activity columns
 #     threshold_cont_att = float(args[3]) # for context attribute columns
-#     threshold_val_att = float(args[4]) # for value attribute columns
-#     threshold_timestamp = float(args[5]) # for timestamp column
-#     threshold_compl = float(args[6]) # determines how complete a column should be
+#     threshold_val_att = threshold_cont_att # for value attribute columns
+#     threshold_timestamp = float(args[4]) # for timestamp column
+#     threshold_compl = float(args[5]) # determines how complete a column should be
 #
 # else:
-#     print("Usage: python main.py [<file_path> <threshold_ui_object> <threshold_activity> <threshold_context_attribute> <threshold_value_attribute> <threshold_timestamp> <threshold_col_completeness>]")
+#     print("Usage: python main.py [<file_path> <threshold_ui_object> <threshold_activity> <threshold_attribute> <threshold_timestamp> <threshold_col_completeness>]")
 #     sys.exit(1)
 #
 # # handle specific file paths "example_ui_log.xlsx" or "student_record.csv"
