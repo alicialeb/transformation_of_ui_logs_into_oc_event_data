@@ -54,14 +54,14 @@ import os
 # else:
 #     raise ValueError("Unsupported file format. Please choose a file of type csv, xls, or xlsx instead.")
 
-log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\example_ui_log.xlsx')
+#log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\example_ui_log.xlsx')
 
-#log = pd.read_csv(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\student_record.csv')
+log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\student_record.xlsx')
 
 threshold_ui_obj = 0.15  # for ui object columns
 threshold_act = 0.2  # for activity columns
 threshold_cont_att = 0.55  # for context attribute columns
-threshold_val_att = 1 - threshold_cont_att # for value attribute columns
+threshold_val_att = threshold_cont_att # for value attribute columns
 threshold_timestamp = 1  # for timestamp column
 threshold_compl = 0.95  # determines how complete a column should be
 

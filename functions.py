@@ -8,7 +8,6 @@ import tkinter as tk
 from tkinter import filedialog as fd
 import re
 import nltk
-from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet
 from nltk.tag import pos_tag
 import copy
@@ -132,7 +131,7 @@ def unify_string_format(log):
     #   and boundaries between letters and digits or underscores
     camel_underscore_regex = '(?<=[a-z])(?=[A-Z])|(?<![A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=[0-9]|[_])'
 
-    for column, row in log.iteritems():
+    for column, row in log.items():
         for index, value in row.items():
             # check if the value (without any leading or trailing whitespace) matches the regex pattern
             if re.fullmatch(string_regex, str(value).strip()):
@@ -565,7 +564,7 @@ def check_for_regex(log, regex):
     # create a dictionary to store the number of values per column that match the regex pattern
     match_count_dictionary = {}
 
-    for column, row in log.iteritems():
+    for column, row in log.items():
         count = 0 # count variable to count how many values match the regex
 
         for value in row:
@@ -686,7 +685,7 @@ def get_column_types(log, column_type_dictionary, column_indices, col_compl_dict
             # check if the column is also in the timestamp_key list
             if col in columns:
                 # check if column includes nearly 100% unique values, since every timestamp in a log should be unique
-                if ratio_dictionary[col] > threshold_timestamp:
+                if ratio_dictionary[col] >= threshold_timestamp:
                     column_type_dictionary.setdefault(col, 'timestamp')
                     # remove this index from the list because a type has been assigned
                     column_indices.remove(col)
@@ -946,7 +945,7 @@ def find_process_objects(log, cont_att_cols, nouns, process_obj_df):
         process_obj_list = []
 
         # loop over column values
-        for col_name, value in row.iteritems():
+        for col_name, value in row.items():
 
             if pd.isna(value):
                 break
@@ -1720,7 +1719,7 @@ def recognize_obj_instances(log, object_hierarchy, ui_object_synonym, undecided_
     last_fourth_obj_inst = []  # for object types on fourth level
 
     # loop over the 'main ui object type' column
-    for row_index, value in log['main ui object type'].iteritems():
+    for row_index, value in log['main ui object type'].items():
 
         # reset local variables
         local_other_ui_obj_cols_highest = copy.deepcopy(other_ui_obj_cols_highest)
@@ -2038,7 +2037,7 @@ def create_event_dict(log, val_att_cols, process_obj_df):
         process_obj_list = []
         related_ui_obj_list = []
         for col_index in event_val_att_cols:
-            att_val = event_df.iloc[row_index, col_index] # value attribute value
+            att_val = str(event_df.iloc[row_index, col_index]) # value attribute value
             att_type = event_df.columns[col_index] # value attribute type
             if att_val is not np.NaN:
                 val_att_dict[f"{row['object instance']}.{att_type}"] = att_val
@@ -2047,17 +2046,17 @@ def create_event_dict(log, val_att_cols, process_obj_df):
         if row_index in process_obj_dict:
             for process_obj in process_obj_dict[row_index]:
                 if not pd.isna(process_obj):
-                    process_obj_list.append(process_obj)
+                    process_obj_list.append(str(process_obj))
 
         related_ui_obj = row["related ui object"]
         if not pd.isna(related_ui_obj):
-            related_ui_obj_list.append(related_ui_obj)
+            related_ui_obj_list.append(str(related_ui_obj))
 
         # add data to the dictionary
         events_dict[row["event id"]] = {
-            "activity": row["activity"],
-            "timestamp": row["timestamp"],
-            "main object": row["object instance"],
+            "activity": str(row["activity"]),
+            "timestamp": str(row["timestamp"]),
+            "main object": str(row["object instance"]),
             "vmap": val_att_dict,
             "umap": related_ui_obj_list,
             "pmap": process_obj_list
@@ -2098,26 +2097,26 @@ def create_main_ui_obj_dict(log, cont_att_cols, val_att_cols):
 
         for col_index in cont_att_cols:
             col_name = log.columns[col_index]
-            cont_att_val = object_df.loc[row_index, col_name]  # context attribute value
+            cont_att_val = str(object_df.loc[row_index, col_name])  # context attribute value
             cont_att_type = col_name  # context attribute type
             if not pd.isna(cont_att_val):
                 cont_att_dict[cont_att_type] = cont_att_val
         for col_index in val_att_cols:
             col_name = log.columns[col_index]
-            val_att_val = object_df.loc[row_index, col_name]  # value attribute value
+            val_att_val = str(object_df.loc[row_index, col_name])  # value attribute value
             val_att_type = col_name  # value attribute type
             if not pd.isna(val_att_val):
                 val_att_dict[val_att_type] = val_att_val
 
         if not pd.isna(row["part of"]):
-            part_of.append(row["part of"])
+            part_of.append(str(row["part of"]))
 
         obj_type = row["main ui object type"]
         if pd.isna(obj_type):
             obj_type = 'unknown'
 
         ui_objects_dict[row["object instance"]] = {
-            "type": obj_type,
+            "type": str(obj_type),
             "cmap": cont_att_dict,
             "vmap": val_att_dict,
             "omap": part_of
@@ -2143,21 +2142,21 @@ def create_ui_obj_dict(ui_objects_dict, other_ui_obj_df, other_ui_obj_df_cont_at
         part_of = [] # list for ui object instances the main ui object is part of
 
         for col_index in other_ui_obj_df_cont_att_cols:
-            cont_att_val = other_ui_obj_df.iloc[row_index, col_index]  # context attribute value
+            cont_att_val = str(other_ui_obj_df.iloc[row_index, col_index])  # context attribute value
             cont_att_type = other_ui_obj_df.columns[col_index]  # context attribute type
             if not pd.isna(cont_att_val):
                 cont_att_dict[cont_att_type] = cont_att_val
         for col_index in other_ui_obj_df_val_att_cols:
-            val_att_val = other_ui_obj_df.iloc[row_index, col_index]  # value attribute value
+            val_att_val = str(other_ui_obj_df.iloc[row_index, col_index])  # value attribute value
             val_att_type = other_ui_obj_df.columns[col_index]  # value attribute type
             if not pd.isna(val_att_val):
                 val_att_dict[val_att_type] = val_att_val
 
         if not pd.isna(row["part of"]):
-            part_of.append(row["part of"])
+            part_of.append(str(row["part of"]))
 
         ui_objects_dict[row["object instance"]] = {
-            "type": row["object type"],
+            "type": str(row["object type"]),
             "cmap": cont_att_dict,
             "vmap": val_att_dict,
             "omap": part_of
@@ -2210,7 +2209,7 @@ def merge_dicts_and_create_json(events_dict, ui_obj_dict, process_obj_dict):
     oc_dict.setdefault('process_objects', process_obj_dict) # add process object dictionary
 
     # create a new json file and write the dictionary to the file
-    with open('oc_example_ui_log.json', 'w') as f:
+    with open('oc_student_record.json', 'w') as f:
         json.dump(oc_dict, f)
 # </editor-fold>
 
