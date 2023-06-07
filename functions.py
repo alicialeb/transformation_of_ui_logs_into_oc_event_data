@@ -129,7 +129,8 @@ def unify_string_format(log):
     # regex that matches boundaries between lowercase and uppercase letters,
     #  boundaries between non-uppercase and uppercase followed by lowercase letters,
     #   and boundaries between letters and digits or underscores
-    camel_underscore_regex = '(?<=[a-z])(?=[A-Z])|(?<![A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=[0-9]|[_])'
+    camel_underscore_regex = r'(?<=[a-z])(?=[A-Z])|_'
+
 
     for column, row in log.items():
         for index, value in row.items():
@@ -2219,7 +2220,7 @@ def merge_dicts_and_create_json(events_dict, ui_obj_dict, process_obj_dict):
     oc_dict.setdefault('process_objects', process_obj_dict) # add process object dictionary
 
     # create a new json file and write the dictionary to the file
-    with open('oc_example_ui_log.json', 'w') as f:
+    with open('oc_student_record.json', 'w') as f:
         json.dump(oc_dict, f)
 # </editor-fold>
 
