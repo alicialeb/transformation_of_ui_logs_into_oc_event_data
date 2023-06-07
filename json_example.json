@@ -260,7 +260,7 @@
         "url": "www.example.com"
       },
       "vmap": {},
-      "omap": []
+      "part of": []
     },
 
     "application_1": {
@@ -269,7 +269,7 @@
         "browser": "Chrome"
       },
       "vmap": {},
-      "omap": []
+      "part of": []
     },
 
     "value_1": {
@@ -280,7 +280,7 @@
       "vmap": {
         "inputValue": "Smithy245" 
       },
-      "omap": ["link_1"]
+      "part of": ["link_1"]
     },
 
     "value_2": {
@@ -291,7 +291,7 @@
       "vmap": {
         "inputValue": "*AjblgaJD)=M"
       },
-      "omap": ["link_1"]
+      "part of": ["link_1"]
     },
 
     "button_1": {
@@ -300,7 +300,7 @@
         "label": "login"
       },
       "vmap": {},
-      "omap": ["link_1"]
+      "part of": ["link_1"]
     },
     
     "link_2": {
@@ -309,7 +309,7 @@
         "url": "www.website.com"
       },
       "vmap": {},
-      "omap": []
+      "part of": []
     },
 
     "application_2": {
@@ -318,7 +318,7 @@
         "browser": "Microsoft Edge"
       },
       "vmap": {},
-      "omap": []
+      "part of": []
     },
 
     "value_3": {
@@ -329,7 +329,7 @@
       "vmap": {
         "inputValue": "Kat-1999"
       },
-      "omap": ["link_2"]
+      "part of": ["link_2"]
     },
 
     "value_4": {
@@ -340,7 +340,7 @@
       "vmap": {
         "inputValue": "Lalkj_?jGElk"
       },
-      "omap": ["link_2"]
+      "part of": ["link_2"]
     },
 
     "button_2": {
@@ -349,7 +349,7 @@
         "label": "confirm"
       },
       "vmap": {},
-      "omap": ["link_2"]
+      "part of": ["link_2"]
     },
 
     "link_3": {
@@ -358,7 +358,7 @@
         "url": "www.example-website.com"
       },
       "vmap": {},
-      "omap": []
+      "part of": []
     },
 
     "application_3": {
@@ -367,7 +367,7 @@
         "browser": "Opera"
       },
       "vmap": {},
-      "omap": []
+      "part of": []
     },
 
     "value_5": {
@@ -378,7 +378,7 @@
       "vmap": {
         "inputValue": "Amy*9"
       },
-      "omap": ["link_3"]
+      "part of": ["link_3"]
     },
 
     "value_6": {
@@ -389,7 +389,7 @@
       "vmap": {
         "inputValue": "aApb6&lkjby"
       },
-      "omap": ["link_3"]
+      "part of": ["link_3"]
     },
 
     "button_3": {
@@ -398,7 +398,7 @@
         "label": "login"
       },
       "vmap": {},
-      "omap": ["link_3"]
+      "part of": ["link_3"]
     }
   },
 

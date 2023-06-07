@@ -2170,7 +2170,7 @@ def create_ui_obj_dict(ui_objects_dict, other_ui_obj_df, other_ui_obj_df_cont_at
             "type": str(row["object type"]),
             "cmap": cont_att_dict,
             "vmap": val_att_dict,
-            "omap": part_of
+            "part of": part_of
         }
 
     return ui_objects_dict
@@ -2220,7 +2220,7 @@ def merge_dicts_and_create_json(events_dict, ui_obj_dict, process_obj_dict):
     oc_dict.setdefault('process_objects', process_obj_dict) # add process object dictionary
 
     # create a new json file and write the dictionary to the file
-    with open('oc_student_record.json', 'w') as f:
+    with open('oc_example_ui_log.json', 'w') as f:
         json.dump(oc_dict, f)
 # </editor-fold>
 
