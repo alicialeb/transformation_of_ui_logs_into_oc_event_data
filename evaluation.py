@@ -1,87 +1,7 @@
-# TODO: compare automatically generated json file with the manually generated one
 import json
-
 import pandas as pd
 
-
-def count_label_values(element):
-    count = 0
-    for label, values in element.items():
-        if isinstance(values, list):
-            for value in values:
-                count += 1
-        elif isinstance(values, dict):
-            for value in values.values():
-                count += 1
-        elif not pd.isna(values):
-            count += 1
-    return count
-
-def compare_elements(elements_1, elements_2, id_dict):
-    # Compare events
-    number_elements_1 = len(elements_1)
-    number_elements_2 = len(elements_2)
-
-    element_amount_score = number_elements_2 / number_elements_1
-    element_score_dict = {}
-
-    for element_key_1, element_labels_1 in elements_1.items():
-        if element_key_1 in id_dict:
-            element_key_2 = id_dict[element_key_1]
-            element_labels_2 = elements_2[element_key_2]
-        else:
-            break
-
-        matches = 0
-        total_values_1 = count_label_values(element_labels_1)
-        total_values_2 = count_label_values(element_labels_2)
-
-        for label, value_1 in element_labels_1.items():
-            value_2 = element_labels_2[label]
-            if isinstance(value_1, list) and isinstance(value_2, list):
-                if any(val.lower() in [item.lower() for item in value_2] for val in value_1):
-                    matches += 1
-            elif isinstance(value_1, dict) and isinstance(value_2, dict):
-                if any(value_1.get(key).lower() == value_2.get(key).lower() if value_1.get(
-                        key) is not None and value_2.get(key) is not None else False for key in value_1.keys()):
-                    matches += 1
-            elif value_2.lower() == value_1.lower():
-                matches += 1
-
-        event_score = matches / total_values_1
-        element_score_dict.setdefault(element_key_1, event_score)
-
-    sum_element_scores = 0
-    for score in element_score_dict.values():
-        sum_element_scores = sum_element_scores + score
-
-    element_scores = sum_element_scores / len(id_dict)
-
-    element_precision = (element_amount_score + element_scores) / 2
-
-    return element_precision
-
-def compare_json(json_1, json_2, id_dict):
-    data_1 = json.loads(json_1)
-    data_2 = json.loads(json_2)
-
-    events_1 = data_1["events"]
-    ui_objects_1 = data_1["ui_objects"]
-    process_objects_1 = data_1["process_objects"]
-
-    events_2 = data_2["events"]
-    ui_objects_2 = data_2["ui_objects"]
-    process_objects_2 = data_2["process_objects"]
-
-    event_precision = compare_elements(events_1, events_2, id_dict)
-    ui_object_precision = compare_elements(ui_objects_1, ui_objects_2, id_dict)
-    process_object_precision = compare_elements(process_objects_1, process_objects_2, id_dict)
-
-    file_precision = (event_precision + ui_object_precision + process_object_precision) / 3
-
-    return file_precision, event_precision, ui_object_precision, process_object_precision
-
-
+# <editor-fold desc="ID Dictionaries">
 id_dict_example_ui_log = {
     "event_1": "event_1",
     "event_2": "event_2",
@@ -128,18 +48,223 @@ id_dict_example_ui_log = {
     "application_3": "application_3",
     "user_1": "user_1"
 }
+# </editor-fold>
+
+def calculate_precision_recall_f1(tp, fp, fn):
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    f1_score = 2 * ((precision * recall) / (precision + recall))
+    return precision, recall, f1_score
+
+
+def compare_events(events_truth, events_auto, id_dict):
+    # counting true positives (tp), false positives (fp), and false negative (fn) of different labels
+    activity_tp = 0 # true positives in activities -> TP: match
+    activity_fp = 0 # false positives in activities -> FP: included in auto but missing in truth
+    activity_fn = 0 # false negatives in activities -> FN: included in truth but missing in auto
+
+    main_obj_tp = 0
+    main_obj_fp = 0
+    main_obj_fn = 0
+
+    vmap_tp = 0
+    vmap_fp = 0
+    vmap_fn = 0
+
+    umap_tp = 0
+    umap_fp = 0
+    umap_fn = 0
+
+    pmap_tp = 0
+    pmap_fp = 0
+    pmap_fn = 0
+
+    maps_tp = 0
+    maps_fp = 0
+    maps_fn = 0
+
+    for event_key_truth, event_labels_truth in events_truth.items():
+        if event_key_truth in id_dict:
+            event_key_auto = id_dict[event_key_truth]
+            event_labels_auto = events_auto[event_key_auto]
+
+            # activities
+            if str(event_labels_truth["activity"]).lower() == str(event_labels_auto["activity"]).lower():
+                activity_tp += 1
+            else:
+                if not pd.isna(event_labels_truth["activity"]):
+                    activity_fn += 1
+                if not pd.isna(event_labels_auto["activity"]):
+                    activity_fp += 1
+
+            # main objects
+            if str(event_labels_truth["main object"]).lower() == str(event_labels_auto["main object"]).lower():
+                main_obj_tp += 1
+            else:
+                if not pd.isna(event_labels_truth["main object"]):
+                    main_obj_fn += 1
+                if not pd.isna(event_labels_auto["main object"]):
+                    main_obj_fp += 1
+
+            # vmap
+            vmap_truth = event_labels_truth["vmap"]
+            vmap_auto = event_labels_auto["vmap"]
+            for label_truth, value_truth in vmap_truth.items():
+                if label_truth in vmap_auto and vmap_auto[label_truth] == value_truth:
+                    vmap_tp += 1
+                    maps_tp += 1
+                else:
+                    vmap_fn += 1
+                    maps_fn += 1
+            # Check for any additional key-value pairs in automatically generated vmap
+            for label_auto, value_auto in vmap_auto.items():
+                if label_auto not in vmap_truth:
+                    vmap_fp += 1
+                    maps_fp += 1
+
+            # umap
+            umap_truth = event_labels_truth["umap"]
+            umap_auto = event_labels_auto["umap"]
+            set_truth = set(map(str.lower, umap_truth))
+            set_auto = set(map(str.lower, umap_auto))
+            # find values that match between umap_truth and umap_auto
+            matches = set_truth & set_auto
+            umap_tp += len(matches)
+            maps_tp += len(matches)
+            # find values in umap_truth but not in umap_auto
+            only_in_truth = set_truth - set_auto
+            umap_fn += len(only_in_truth)
+            maps_fn += len(only_in_truth)
+            # find values in umap_auto but not in umap_truth
+            only_in_auto = set_auto - set_truth
+            umap_fp += len(only_in_auto)
+            maps_fp += len(only_in_auto)
+
+            # pmap
+            pmap_truth = event_labels_truth["pmap"]
+            pmap_auto = event_labels_auto["pmap"]
+            set_truth = set(map(str.lower, pmap_truth))
+            set_auto = set(map(str.lower, pmap_auto))
+            # find values that match between pmap_truth and pmap_auto
+            matches = set_truth & set_auto
+            pmap_tp += len(matches)
+            maps_tp += len(matches)
+            # find values in pmap_truth but not in pmap_auto
+            only_in_truth = set_truth - set_auto
+            pmap_fn += len(only_in_truth)
+            maps_fn += len(only_in_truth)
+            # find values in pmap_auto but not in pmap_truth
+            only_in_auto = set_auto - set_truth
+            pmap_fp += len(only_in_auto)
+            maps_fp += len(only_in_auto)
+
+        else:
+            # count values and add to fn
+            if not pd.isna(event_labels_truth["activity"]):
+                activity_fn += 1
+
+            if not pd.isna(event_labels_truth["main object"]):
+                main_obj_fn += 1
+
+            inner_dict = event_labels_truth["vmap"]
+            vmap_fn += len(inner_dict.keys()) # count values included in value map
+            maps_fn += len(inner_dict.keys())
+
+            umap_fn += len(event_labels_truth["umap"])  # count values included in the list umap
+            maps_fn += len(event_labels_truth["umap"])
+
+            pmap_fn += len(event_labels_truth["pmap"])  # count values included in the list pmap
+            maps_fn += len(event_labels_truth["pmap"])
+
+    for event_key_auto, event_labels_auto in events_auto.items():
+        if event_key_auto not in id_dict.values():
+            # count values and add to fp
+            if not pd.isna(event_labels_auto["activity"]):
+                activity_fp += 1
+
+            if not pd.isna(event_labels_auto["main object"]):
+                main_obj_fp += 1
+
+            inner_dict = event_labels_auto["vmap"]
+            vmap_fp += len(inner_dict.keys())  # count values included in value map
+            maps_fp += len(inner_dict.keys())
+
+            umap_fp += len(event_labels_auto["umap"])  # count values included in the list umap
+            maps_fp += len(event_labels_auto["umap"])
+
+            pmap_fp += len(event_labels_auto["pmap"])  # count values included in the list pmap
+            maps_fp += len(event_labels_auto["pmap"])
+
+    # calculate scores
+    event_activity_precision, event_activity_recall, event_activity_f1 = calculate_precision_recall_f1(activity_tp,
+                                                                                                       activity_fp,
+                                                                                                       activity_fn)
+    event_main_obj_precision, event_main_obj_recall, event_main_obj_f1 = calculate_precision_recall_f1(main_obj_tp,
+                                                                                                       main_obj_fp,
+                                                                                                       main_obj_fn)
+    event_vmap_precision, event_vmap_recall, event_vmap_f1 = calculate_precision_recall_f1(vmap_tp, vmap_fp, vmap_fn)
+    event_umap_precision, event_umap_recall, event_umap_f1 = calculate_precision_recall_f1(umap_tp, umap_fp, umap_fn)
+    event_pmap_precision, event_pmap_recall, event_pmap_f1 = calculate_precision_recall_f1(pmap_tp, pmap_fp, pmap_fn)
+    event_maps_precision, event_maps_recall, event_maps_f1 = calculate_precision_recall_f1(maps_tp, maps_fp, maps_fn)
+
+    return event_activity_precision, event_activity_recall, event_activity_f1, event_main_obj_precision, event_main_obj_recall, event_main_obj_f1, event_vmap_precision, event_vmap_recall, event_vmap_f1,  event_umap_precision, event_umap_recall, event_umap_f1, event_pmap_precision, event_pmap_recall, event_pmap_f1, event_maps_precision, event_maps_recall, event_maps_f1
+
 
 # read the contents of the JSON files
 with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\json_example.json', 'r') as file1:
-    json_gold_standard = file1.read()
+    json_truth = file1.read()
 
 with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\oc_example_ui_log.json', 'r') as file2:
-    json_auto_created = file2.read()
+    json_auto = file2.read()
 
-# call the compare_json method with the file contents
-file_precision, event_precision, ui_object_precision, process_object_precision = compare_json(json_gold_standard , json_auto_created, id_dict_example_ui_log)
+data_truth = json.loads(json_truth)
+data_auto = json.loads(json_auto)
 
-print(f'File precision: {file_precision}')
-print(f'Event precision: {event_precision}')
-print(f'UI object precision: {ui_object_precision}')
-print(f'Process object precision: {process_object_precision}')
+events_truth = data_truth["events"]
+ui_objects_truth = data_truth["ui_objects"]
+process_objects_truth = data_truth["process_objects"]
+
+events_auto = data_auto["events"]
+ui_objects_auto = data_auto["ui_objects"]
+process_objects_auto = data_auto["process_objects"]
+
+event_activity_precision, event_activity_recall, event_activity_f1, event_main_obj_precision, event_main_obj_recall, event_main_obj_f1, event_vmap_precision, event_vmap_recall, event_vmap_f1,  event_umap_precision, event_umap_recall, event_umap_f1, event_pmap_precision, event_pmap_recall, event_pmap_f1, event_maps_precision, event_maps_recall, event_maps_f1 = compare_events(events_truth, events_auto, id_dict_example_ui_log)
+
+event_precision = (event_activity_precision + event_main_obj_precision + event_maps_precision) / 3
+event_recall = (event_activity_recall + event_main_obj_recall + event_maps_recall) / 3
+event_f1 = (event_activity_f1 + event_main_obj_f1 + event_maps_f1) / 3
+
+print("Events:")
+print(f'-F1-Score: {event_f1}')
+print(f'-Precision: {event_precision}')
+print(f'-Recall: {event_recall}')
+print()
+print("-Activities:")
+print(f'--F1-Score: {event_activity_f1}')
+print(f'--Precision: {event_activity_precision}')
+print(f'--Recall: {event_activity_recall}')
+print()
+print("-Main UI Objects:")
+print(f'--F1-Score: {event_main_obj_f1}')
+print(f'--Precision: {event_main_obj_precision}')
+print(f'--Recall: {event_main_obj_recall}')
+print()
+print("-Maps:")
+print(f'--F1-Score: {event_maps_f1}')
+print(f'--Precision: {event_maps_precision}')
+print(f'--Recall: {event_maps_recall}')
+print()
+print("--vmap:")
+print(f'---F1-Score: {event_vmap_f1}')
+print(f'---Precision: {event_vmap_precision}')
+print(f'---Recall: {event_vmap_recall}')
+print()
+print("--umap:")
+print(f'---F1-Score: {event_umap_f1}')
+print(f'---Precision: {event_umap_precision}')
+print(f'---Recall: {event_umap_recall}')
+print()
+print("--pmap:")
+print(f'---F1-Score: {event_pmap_f1}')
+print(f'---Precision: {event_pmap_precision}')
+print(f'---Recall: {event_pmap_recall}')
