@@ -925,13 +925,13 @@ def is_dictionary_noun(word):
 
 
 # find process object types in the log; only the context attribute columns are interesting here
-def find_process_objects(log, cont_att_cols, nouns, process_obj_df):
+def find_process_objects(log, cont_att_cols, process_obj_df, excluded_words):
     """
     Recognizes process objects in the log.
 
+    :param excluded_words:
     :param log: A pandas DataFrame representing the UI log.
     :param cont_att_cols: List of columns of type context attribute.
-    :param nouns: A pandas DataFrame including nouns.
     :param process_obj_df: A pandas DataFrame for the process objects found in the log.
     :return: A dictionary with row indices as keys and a list of process objects included in that row as values.
     """
@@ -960,7 +960,7 @@ def find_process_objects(log, cont_att_cols, nouns, process_obj_df):
             tagged_words = pos_tag([stem_value])
             pos = tagged_words[0][1]
 
-            if is_dictionary_noun(stem_value):
+            if is_dictionary_noun(stem_value) and value not in excluded_words:
                 if value not in process_obj_list:
                     process_obj_list.append(value)
                     process_obj_inst_dict.setdefault(value, f'{value}_{counter.get_next_count(value)}')
@@ -1179,12 +1179,12 @@ def get_attribute_values(log, row_index, combined_att_list, val_att_cols, cont_a
         cell_value = log.iloc[row_index, col_index]
 
         # for the context attribute columns save the column value in the list
-        if col_index in cont_att_cols and cell_value is not np.NaN:
+        if col_index in cont_att_cols and not pd.isna(cell_value):
             att_list.append(log.iloc[row_index, col_index])
             att_col_indices_list.append(col_index)
 
         # for the value attribute columns save the column title in the list
-        elif col_index in val_att_cols and cell_value is not np.NaN:
+        elif col_index in val_att_cols and not pd.isna(cell_value):
             att_list.append(log.columns[col_index])
             att_col_indices_list.append(col_index)
 
@@ -1366,7 +1366,7 @@ def generate_key(att_list, object_instances_dict, value):
     :param value: A String with the object type currently in question.
     :return: A tuple consisting of the object instance, and the dictionary with all object instances and their keys.
     """
-    # remove nan values from the list
+    # remove None values from the list
     att_list = [att for att in att_list if att is not None]
 
     # if there is more than one value in the list, build a tuple so it can be used as a dictionary key
@@ -1442,10 +1442,11 @@ def create_new_row_ui_obj_df(log, obj, log_row_index, obj_inst, part_of, other_u
     return other_ui_obj_df, log, other_ui_obj_df_val_att_cols, other_ui_obj_df_cont_att_cols
 
 
-def decide_undecided_obj_cols(log, undecided_obj_cols, value_term, obj_level, local_other_ui_obj_cols_fourth, unmatched_att_list, row_index):
+def decide_undecided_obj_cols(log, undecided_obj_cols, value_term, obj_level, local_other_ui_obj_cols_fourth, unmatched_att_list, row_index, val_att_cols):
     """
     Chooses how to handle the columns where the object type is not clear yet.
 
+    :param val_att_cols: Dictionary with value attribute indices columns.
     :param log: A pandas DataFrame representing the UI log.
     :param undecided_obj_cols: A dictionary with column indices that haven't been assigned one clear object type
                                 but a list of possible ones.
@@ -1459,6 +1460,12 @@ def decide_undecided_obj_cols(log, undecided_obj_cols, value_term, obj_level, lo
     :return: A tuple of the updated unmatched_att_list and the updated local_other_ui_obj_cols_fourth.
     """
     if obj_level == 'obj_fourth_level':
+        # columns of type value attribute have to be assigned to the main obj
+        for col_index in list(local_other_ui_obj_cols_fourth.keys()):
+            if col_index in val_att_cols:
+                unmatched_att_list.append(col_index)
+                local_other_ui_obj_cols_fourth.pop(col_index)
+
         for obj_index, obj_types in undecided_obj_cols.items():
             # if the undecided column object possibility matches the main, then add it to the unmatched list,
             #  so it will be added to the main's attributes
@@ -1753,7 +1760,8 @@ def recognize_obj_instances(log, object_hierarchy, ui_object_synonym, undecided_
                                                                                                      obj_level,
                                                                                                      local_other_ui_obj_cols_fourth,
                                                                                                      local_unmatched_att_list,
-                                                                                                     row_index)
+                                                                                                     row_index,
+                                                                                                     val_att_cols)
 
                 # main highest level
                 log, object_instances_dict, last_app_inst, last_web_inst, local_other_ui_obj_cols_highest = identify_main_object_instances(
@@ -1814,7 +1822,8 @@ def recognize_obj_instances(log, object_hierarchy, ui_object_synonym, undecided_
                                                                                                      obj_level,
                                                                                                      local_other_ui_obj_cols_fourth,
                                                                                                      local_unmatched_att_list,
-                                                                                                     row_index)
+                                                                                                     row_index,
+                                                                                                     val_att_cols)
 
                 # set variable to true since the main ui object is not on this level
                 main_not_this_level = True
@@ -1938,7 +1947,8 @@ def recognize_obj_instances(log, object_hierarchy, ui_object_synonym, undecided_
                                                                                                  value_term, obj_level,
                                                                                                  local_other_ui_obj_cols_fourth,
                                                                                                  local_unmatched_att_list,
-                                                                                                 row_index)
+                                                                                                 row_index,
+                                                                                                 val_att_cols)
 
             # set variable to true since the main ui object is not on this level
             main_not_this_level = True
@@ -2037,10 +2047,10 @@ def create_event_dict(log, val_att_cols, process_obj_df):
         process_obj_list = []
         related_ui_obj_list = []
         for col_index in event_val_att_cols:
-            att_val = str(event_df.iloc[row_index, col_index]) # value attribute value
+            att_val = event_df.iloc[row_index, col_index] # value attribute value
             att_type = event_df.columns[col_index] # value attribute type
             if att_val is not np.NaN:
-                val_att_dict[f"{row['object instance']}.{att_type}"] = att_val
+                val_att_dict[f"{row['object instance']}.{att_type}"] = str(att_val)
 
         # loop over process objects and add the ones with matching saved index to the list
         if row_index in process_obj_dict:
@@ -2097,16 +2107,16 @@ def create_main_ui_obj_dict(log, cont_att_cols, val_att_cols):
 
         for col_index in cont_att_cols:
             col_name = log.columns[col_index]
-            cont_att_val = str(object_df.loc[row_index, col_name])  # context attribute value
+            cont_att_val = object_df.loc[row_index, col_name]  # context attribute value
             cont_att_type = col_name  # context attribute type
             if not pd.isna(cont_att_val):
-                cont_att_dict[cont_att_type] = cont_att_val
+                cont_att_dict[cont_att_type] = str(cont_att_val)
         for col_index in val_att_cols:
             col_name = log.columns[col_index]
-            val_att_val = str(object_df.loc[row_index, col_name])  # value attribute value
+            val_att_val = object_df.loc[row_index, col_name]  # value attribute value
             val_att_type = col_name  # value attribute type
             if not pd.isna(val_att_val):
-                val_att_dict[val_att_type] = val_att_val
+                val_att_dict[val_att_type] = str(val_att_val)
 
         if not pd.isna(row["part of"]):
             part_of.append(str(row["part of"]))
@@ -2142,15 +2152,15 @@ def create_ui_obj_dict(ui_objects_dict, other_ui_obj_df, other_ui_obj_df_cont_at
         part_of = [] # list for ui object instances the main ui object is part of
 
         for col_index in other_ui_obj_df_cont_att_cols:
-            cont_att_val = str(other_ui_obj_df.iloc[row_index, col_index])  # context attribute value
+            cont_att_val = other_ui_obj_df.iloc[row_index, col_index]  # context attribute value
             cont_att_type = other_ui_obj_df.columns[col_index]  # context attribute type
             if not pd.isna(cont_att_val):
-                cont_att_dict[cont_att_type] = cont_att_val
+                cont_att_dict[cont_att_type] = str(cont_att_val)
         for col_index in other_ui_obj_df_val_att_cols:
-            val_att_val = str(other_ui_obj_df.iloc[row_index, col_index])  # value attribute value
+            val_att_val = other_ui_obj_df.iloc[row_index, col_index]  # value attribute value
             val_att_type = other_ui_obj_df.columns[col_index]  # value attribute type
             if not pd.isna(val_att_val):
-                val_att_dict[val_att_type] = val_att_val
+                val_att_dict[val_att_type] = str(val_att_val)
 
         if not pd.isna(row["part of"]):
             part_of.append(str(row["part of"]))
@@ -2173,7 +2183,6 @@ def create_process_obj_dict(process_obj_df):
     :return: A dictionary with the process object instances ready to be converted into a json file.
     """
     process_obj_dict = {} # dictionary for process objects
-    att_dict = {} # dictionary for attribute values and their types
     att_cols = [] # list for attribute column indices
 
     # starting at index three because the first column is the row index, the second the object instance, and the third the object type
@@ -2181,14 +2190,15 @@ def create_process_obj_dict(process_obj_df):
         att_cols.append(x)
 
     for row_index, row in process_obj_df.iterrows():
+        att_dict = {}  # dictionary for attribute values and their types
         for col_index in att_cols:
             att_val = process_obj_df.iloc[row_index, col_index]  # context attribute value
             att_type = process_obj_df.columns[col_index]  # context attribute type
             if not pd.isna(att_val):
-                att_dict[att_type] = att_val
+                att_dict[att_type] = str(att_val)
 
         process_obj_dict[row["object instance"]] = {
-            "type": row["object type"],
+            "type": str(row["object type"]),
             "amap": att_dict,
         }
 
@@ -2209,7 +2219,7 @@ def merge_dicts_and_create_json(events_dict, ui_obj_dict, process_obj_dict):
     oc_dict.setdefault('process_objects', process_obj_dict) # add process object dictionary
 
     # create a new json file and write the dictionary to the file
-    with open('oc_student_record.json', 'w') as f:
+    with open('oc_example_ui_log.json', 'w') as f:
         json.dump(oc_dict, f)
 # </editor-fold>
 

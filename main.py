@@ -48,15 +48,15 @@ import os
 #
 # # check if the file format is correct
 # if file_path.endswith('.xls') or file_path.endswith('.xlsx'):
-#     log = pd.read_excel(file_path)
+#     log = pd.read_excel(file_path, dtype=str)
 # elif file_path.endswith('.csv'):
-#     log = pd.read_csv(file_path)
+#     log = pd.read_csv(file_path, dtype=str)
 # else:
 #     raise ValueError("Unsupported file format. Please choose a file of type csv, xls, or xlsx instead.")
 
-#log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\example_ui_log.xlsx')
+log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\example_ui_log.xlsx',  dtype=str)
 
-log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\student_record.xlsx')
+#log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\student_record.xlsx',  dtype=str)
 
 threshold_ui_obj = 0.15  # for ui object columns
 threshold_act = 0.2  # for activity columns
@@ -68,10 +68,6 @@ threshold_compl = 0.95  # determines how complete a column should be
 # import action label list as DataFrame taken from https://carbondesignsystem.com/guidelines/content/action-labels/ and
 # supplemented with own ideas (confirm, login)
 action_labels = pd.read_csv(r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\action_labels.csv')
-
-# TODO: search for other noun list, so process objects can be recognized
-# import noun list extracted from wordNet as DataFrame
-nouns = pd.read_csv(r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\nouns_final.csv')
 # </editor-fold>
 
 
@@ -129,6 +125,9 @@ obj_highest_level = ['website', 'application']
 obj_second_level = ['file']
 obj_third_level = ['sheet']
 obj_fourth_level = ['field', 'button', 'image']
+
+# words not to be tagged as process objects even though the classifier classifies some of them as nouns
+excluded_words = ['chrome', 'firefox', 'safari', 'microsoft edge', 'opera', 'excel', 'power point']
 # </editor-fold>
 
 
@@ -227,8 +226,8 @@ log, column_type_dictionary = get_column_types(log, column_type_dictionary, colu
 unique_dictionary = get_unique_values_per_col(log)
 
 # make sure all ui object types are recorded in the ui object type dictionary
-column_type_dictionary = complete_element_type_dictionary(column_type_dictionary, unique_dictionary,
-                                                          column_type_dictionary, 'ui object type')
+ui_object_type_dictionary = complete_element_type_dictionary(column_type_dictionary, unique_dictionary,
+                                                          ui_object_type_dictionary, 'ui object type')
 # make sure all attribute types are recorded in the attribute type dictionary
 attribute_type_dictionary = complete_element_type_dictionary(column_type_dictionary, unique_dictionary,
                                                           attribute_type_dictionary, 'attribute')
@@ -251,7 +250,7 @@ pot_process_obj_cols = get_potential_process_obj_cols(cont_att_cols, url_match_c
 process_obj_df = pd.DataFrame(columns=['row index', 'object instance', 'object type'])
 
 # call function to find process objects in the log
-process_obj_df = find_process_objects(log, pot_process_obj_cols, nouns, process_obj_df)
+process_obj_df = find_process_objects(log, pot_process_obj_cols, process_obj_df, excluded_words)
 #process_obj_df = find_process_objects_new(log, cont_att_cols, process_obj_df)
 
 # call function to combine the ui object type dictionaries in one dictionary
