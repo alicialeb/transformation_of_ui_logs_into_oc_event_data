@@ -2130,7 +2130,7 @@ def create_main_ui_obj_dict(log, cont_att_cols, val_att_cols):
             "type": str(obj_type),
             "cmap": cont_att_dict,
             "vmap": val_att_dict,
-            "omap": part_of
+            "part of": part_of
         }
 
     return ui_objects_dict

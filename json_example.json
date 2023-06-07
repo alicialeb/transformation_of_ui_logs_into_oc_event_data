@@ -278,7 +278,7 @@
         "label": "username"
       },
       "vmap": {
-        "inputValue": "Smithy245" 
+        "value": "Smithy245" 
       },
       "part of": ["link_1"]
     },
@@ -289,7 +289,7 @@
         "label": "password"
       },
       "vmap": {
-        "inputValue": "*AjblgaJD)=M"
+        "value": "*AjblgaJD)=M"
       },
       "part of": ["link_1"]
     },
@@ -327,7 +327,7 @@
         "label": "username"
       },
       "vmap": {
-        "inputValue": "Kat-1999"
+        "value": "Kat-1999"
       },
       "part of": ["link_2"]
     },
@@ -338,7 +338,7 @@
         "label": "password"
       },
       "vmap": {
-        "inputValue": "Lalkj_?jGElk"
+        "value": "Lalkj_?jGElk"
       },
       "part of": ["link_2"]
     },
@@ -376,7 +376,7 @@
         "label": "username"
       },
       "vmap": {
-        "inputValue": "Amy*9"
+        "value": "Amy*9"
       },
       "part of": ["link_3"]
     },
@@ -387,7 +387,7 @@
         "label": "password"
       },
       "vmap": {
-        "inputValue": "aApb6&lkjby"
+        "value": "aApb6&lkjby"
       },
       "part of": ["link_3"]
     },
