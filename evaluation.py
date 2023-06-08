@@ -48,6 +48,187 @@ id_dict_example_ui_log = {
     "application_3": "application_3",
     "user_1": "user_1"
 }
+
+id_dict_student_record = {
+    'event_1': 'event_1',
+    'event_2': 'event_2',
+    'event_3': 'event_3',
+    'event_4': 'event_4',
+    'event_5': 'event_5',
+    'event_6': 'event_6',
+    'event_7': 'event_7',
+    'event_8': 'event_8',
+    'event_9': 'event_9',
+    'event_10': 'event_10',
+    'event_11': 'event_11',
+    'event_12': 'event_12',
+    'event_13': 'event_13',
+    'event_14': 'event_14',
+    'event_15': 'event_15',
+    'event_16': 'event_16',
+    'event_17': 'event_17',
+    'event_18': 'event_18',
+    'event_19': 'event_19',
+    'event_20': 'event_20',
+    'event_21': 'event_21',
+    'event_22': 'event_22',
+    'event_23': 'event_23',
+    'event_24': 'event_24',
+    'event_25': 'event_25',
+    'event_26': 'event_26',
+    'event_27': 'event_27',
+    'event_28': 'event_28',
+    'event_29': 'event_29',
+    'event_30': 'event_30',
+    'event_31': 'event_31',
+    'event_32': 'event_32',
+    'event_33': 'event_33',
+    'event_34': 'event_34',
+    'event_35': 'event_35',
+    'event_36': 'event_36',
+    'event_37': 'event_37',
+    'event_38': 'event_38',
+    'event_39': 'event_39',
+    'event_40': 'event_40',
+    'event_41': 'event_41',
+    'event_42': 'event_42',
+    'event_43': 'event_43',
+    'event_44': 'event_44',
+    'event_45': 'event_45',
+    'event_46': 'event_46',
+    'event_47': 'event_47',
+    'event_48': 'event_48',
+    'event_49': 'event_49',
+    'event_50': 'event_50',
+    'event_51': 'event_51',
+    'event_52': 'event_52',
+    'event_53': 'event_53',
+    'event_54': 'event_54',
+    'event_55': 'event_55',
+    'event_56': 'event_56',
+    'event_57': 'event_57',
+    'event_58': 'event_58',
+    'event_59': 'event_59',
+    'event_60': 'event_60',
+    'event_61': 'event_61',
+    'event_62': 'event_62',
+    'event_63': 'event_63',
+    'event_64': 'event_64',
+    'event_65': 'event_65',
+    'event_66': 'event_66',
+    'event_67': 'event_67',
+    'event_68': 'event_68',
+    'event_69': 'event_69',
+    'event_70': 'event_70',
+    'event_71': 'event_71',
+    'event_72': 'event_72',
+    'event_73': 'event_73',
+    'event_74': 'event_74',
+    'event_75': 'event_75',
+    'event_76': 'event_76',
+    'event_77': 'event_77',
+    'event_78': 'event_78',
+    'event_79': 'event_79',
+    'event_80': 'event_80',
+    'event_81': 'event_81',
+    'event_82': 'event_82',
+    'event_83': 'event_83',
+    'event_84': 'event_84',
+    'event_85': 'event_85',
+    'event_86': 'event_86',
+    'event_87': 'event_87',
+    'event_88': 'event_88',
+    'event_89': 'event_89',
+    'event_90': 'event_90',
+    'event_91': 'event_91',
+    'event_92': 'event_92',
+    'event_93': 'event_93',
+    'event_94': 'event_94',
+    'event_95': 'event_95',
+    'event_96': 'event_96',
+    'event_97': 'event_97',
+    'event_98': 'event_98',
+    'event_99': 'event_99',
+    'event_100': 'event_100',
+    'event_101': 'event_101',
+    'event_102': 'event_102',
+    'event_103': 'event_103',
+    'event_104': 'event_104',
+    'event_105': 'event_105',
+    'event_106': 'event_106',
+    'event_107': 'event_107',
+    'event_108': 'event_108',
+    'event_109': 'event_109',
+    'event_110': 'event_110',
+    'event_111': 'event_111',
+    'event_112': 'event_112',
+    'event_113': 'event_113',
+    'event_114': 'event_114',
+    'event_115': 'event_115',
+    'event_116': 'event_116',
+    'event_117': 'event_117',
+    'event_118': 'event_118',
+    'event_119': 'event_119',
+    'event_120': 'event_120',
+    'event_121': 'event_121',
+    'event_122': 'event_122',
+    'link_1': 'link_1',
+    'website_1': 'website_1',
+    'file_1': 'file_1',
+    'sheet_1': 'sheet_1',
+    'checkbox_1': 'checkbox_1',
+    'button_1': 'button_1',
+    'application_1': 'application_1',
+    'application_2': 'application_2',
+    'user_1': 'user_1',
+    'unknown_1': 'unknown_1',
+    'unknown_2': 'unknown_2',
+    'unknown_3': 'unknown_3',
+    'unknown_4': 'unknown_4',
+    'unknown_5': 'unknown_5',
+    'unknown_6': 'unknown_6',
+    'unknown_7': 'unknown_7',
+    'unknown_8': 'unknown_8',
+    'unknown_9': 'unknown_9',
+    'unknown_10': 'unknown_10',
+    'cell_1': 'cell_1',
+    'cell_2': 'cell_2',
+    'cell_3': 'cell_3',
+    'cell_4': 'cell_4',
+    'cell_5': 'cell_5',
+    'cell_6': 'cell_6',
+    'cell_7': 'cell_7',
+    'cell_8': 'cell_8',
+    'cell_9': 'cell_9',
+    'cell_10': 'cell_10',
+    'cell_11': 'cell_11',
+    'cell_12': 'cell_12',
+    'cell_13': 'cell_13',
+    'cell_14': 'cell_14',
+    'cell_15': 'cell_15',
+    'cell_16': 'cell_16',
+    'cell_17': 'cell_17',
+    'cell_18': 'cell_18',
+    'cell_19': 'cell_19',
+    'cell_20': 'cell_20',
+    'cell_21': 'cell_21',
+    'cell_22': 'cell_22',
+    'cell_23': 'cell_23',
+    'cell_24': 'cell_24',
+    'cell_25': 'cell_25',
+    'cell_26': 'cell_26',
+    'cell_27': 'cell_27',
+    'cell_28': 'cell_28',
+    'field_1': 'field_1',
+    'field_2': 'field_2',
+    'field_3': 'field_3',
+    'field_4': 'field_4',
+    'field_5': 'field_5',
+    'field_6': 'field_6',
+    'field_7': 'field_7',
+    'field_8': 'field_8',
+    'field_9': 'field_9'
+}
 # </editor-fold>
 
 def calculate_precision_recall_f1(tp, fp, fn):
@@ -474,143 +655,147 @@ def compare_process_objects(process_obj_truth, process_obj_auto, id_dict):
     )
 
 
+def calculate_scores(json_truth, json_auto, id_dict):
+    data_truth = json.loads(json_truth)
+    data_auto = json.loads(json_auto)
+
+    events_truth = data_truth["events"]
+    ui_objects_truth = data_truth["ui_objects"]
+    process_objects_truth = data_truth["process_objects"]
+
+    events_auto = data_auto["events"]
+    ui_objects_auto = data_auto["ui_objects"]
+    process_objects_auto = data_auto["process_objects"]
+
+    # Events
+    (event_activity_precision, event_activity_recall, event_activity_f1,
+     event_main_obj_precision, event_main_obj_recall, event_main_obj_f1,
+     event_vmap_precision, event_vmap_recall, event_vmap_f1,
+     event_umap_precision, event_umap_recall, event_umap_f1,
+     event_pmap_precision, event_pmap_recall, event_pmap_f1,
+     event_maps_precision, event_maps_recall, event_maps_f1) = compare_events(events_truth, events_auto, id_dict)
+
+    event_precision = (event_activity_precision + event_main_obj_precision + event_maps_precision) / 3
+    event_recall = (event_activity_recall + event_main_obj_recall + event_maps_recall) / 3
+    event_f1 = (event_activity_f1 + event_main_obj_f1 + event_maps_f1) / 3
+
+    # UI Objects
+    (ui_obj_type_precision, ui_obj_type_recall, ui_obj_type_f1,
+     ui_obj_cmap_precision, ui_obj_cmap_recall, ui_obj_cmap_f1,
+     ui_obj_vmap_precision, ui_obj_vmap_recall, ui_obj_vmap_f1,
+     ui_obj_part_of_precision, ui_obj_part_of_recall, ui_obj_part_of_f1,
+     ui_obj_maps_precision, ui_obj_maps_recall, ui_obj_maps_f1) = compare_ui_objects(ui_objects_truth, ui_objects_auto, id_dict)
+
+    ui_obj_precision = (ui_obj_type_precision + ui_obj_maps_precision) / 2
+    ui_obj_recall = (ui_obj_type_recall + ui_obj_maps_recall) / 2
+    ui_obj_f1 = (ui_obj_type_f1 + ui_obj_maps_f1) / 2
+
+    # Process Objects
+    (process_obj_type_precision, process_obj_type_recall, process_obj_type_f1,
+     process_obj_amap_precision, process_obj_amap_recall, process_obj_amap_f1) = compare_process_objects(process_objects_truth, process_objects_auto, id_dict)
+
+    process_obj_precision = (process_obj_type_precision + process_obj_amap_precision) / 2
+    process_obj_recall = (process_obj_type_recall + process_obj_amap_recall) / 2
+    process_obj_f1 = (process_obj_type_f1 + process_obj_amap_f1) / 2
+
+    # log scores
+    log_precision = (event_precision + ui_obj_precision + process_obj_precision) / 3
+    log_recall = (event_recall + ui_obj_recall + process_obj_recall) / 3
+    log_f1 = (event_f1 + ui_obj_f1 + process_obj_f1) / 3
+
+
+
+    print("Log Scores:")
+    print(f'-F1-Score: {log_f1}')
+    print(f'-Precision: {log_precision}')
+    print(f'-Recall: {log_recall}')
+    print("-"*65)
+    print("-Event Scores:")
+    print(f'--F1-Score: {event_f1}')
+    print(f'--Precision: {event_precision}')
+    print(f'--Recall: {event_recall}')
+    print()
+    print("--Activities:")
+    print(f'---F1-Score: {event_activity_f1}')
+    print(f'---Precision: {event_activity_precision}')
+    print(f'---Recall: {event_activity_recall}')
+    print()
+    print("--Main UI Objects:")
+    print(f'---F1-Score: {event_main_obj_f1}')
+    print(f'---Precision: {event_main_obj_precision}')
+    print(f'---Recall: {event_main_obj_recall}')
+    print()
+    print("--Maps:")
+    print(f'---F1-Score: {event_maps_f1}')
+    print(f'---Precision: {event_maps_precision}')
+    print(f'---Recall: {event_maps_recall}')
+    print()
+    print("---vmap:")
+    print(f'----F1-Score: {event_vmap_f1}')
+    print(f'----Precision: {event_vmap_precision}')
+    print(f'----Recall: {event_vmap_recall}')
+    print()
+    print("---umap:")
+    print(f'----F1-Score: {event_umap_f1}')
+    print(f'----Precision: {event_umap_precision}')
+    print(f'----Recall: {event_umap_recall}')
+    print()
+    print("---pmap:")
+    print(f'----F1-Score: {event_pmap_f1}')
+    print(f'----Precision: {event_pmap_precision}')
+    print(f'----Recall: {event_pmap_recall}')
+    print("-"*65)
+    print("-UI Object Scores:")
+    print(f'--F1-Score: {ui_obj_f1}')
+    print(f'--Precision: {ui_obj_precision}')
+    print(f'--Recall: {ui_obj_recall}')
+    print()
+    print("--Object Types:")
+    print(f'---F1-Score: {ui_obj_type_f1}')
+    print(f'---Precision: {ui_obj_type_precision}')
+    print(f'---Recall: {ui_obj_type_recall}')
+    print()
+    print("--Maps:")
+    print(f'---F1-Score: {ui_obj_maps_f1}')
+    print(f'---Precision: {ui_obj_maps_precision}')
+    print(f'---Recall: {ui_obj_maps_recall}')
+    print()
+    print("---cmap:")
+    print(f'----F1-Score: {ui_obj_cmap_f1}')
+    print(f'----Precision: {ui_obj_cmap_precision}')
+    print(f'----Recall: {ui_obj_cmap_recall}')
+    print()
+    print("---vmap:")
+    print(f'----F1-Score: {ui_obj_vmap_f1}')
+    print(f'----Precision: {ui_obj_vmap_precision}')
+    print(f'----Recall: {ui_obj_vmap_recall}')
+    print()
+    print("---part of:")
+    print(f'----F1-Score: {ui_obj_part_of_f1}')
+    print(f'----Precision: {ui_obj_part_of_precision}')
+    print(f'----Recall: {ui_obj_part_of_recall}')
+    print("-"*65)
+    print("-Process Object Scores:")
+    print(f'--F1-Score: {process_obj_f1}')
+    print(f'--Precision: {process_obj_precision}')
+    print(f'--Recall: {process_obj_recall}')
+    print()
+    print("--Object Types:")
+    print(f'---F1-Score: {process_obj_type_f1}')
+    print(f'---Precision: {process_obj_type_precision}')
+    print(f'---Recall: {process_obj_type_recall}')
+    print()
+    print("--amap:")
+    print(f'---F1-Score: {process_obj_amap_f1}')
+    print(f'---Precision: {process_obj_amap_precision}')
+    print(f'---Recall: {process_obj_amap_recall}')
+
+
 # read the contents of the JSON files
-with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\json_example.json', 'r') as file1:
+with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\json_student_record.json', 'r') as file1:
     json_truth = file1.read()
 
-with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\oc_example_ui_log.json', 'r') as file2:
+with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\oc_student_record.json', 'r') as file2:
     json_auto = file2.read()
 
-data_truth = json.loads(json_truth)
-data_auto = json.loads(json_auto)
-
-events_truth = data_truth["events"]
-ui_objects_truth = data_truth["ui_objects"]
-process_objects_truth = data_truth["process_objects"]
-
-events_auto = data_auto["events"]
-ui_objects_auto = data_auto["ui_objects"]
-process_objects_auto = data_auto["process_objects"]
-
-# Events
-(event_activity_precision, event_activity_recall, event_activity_f1,
- event_main_obj_precision, event_main_obj_recall, event_main_obj_f1,
- event_vmap_precision, event_vmap_recall, event_vmap_f1,
- event_umap_precision, event_umap_recall, event_umap_f1,
- event_pmap_precision, event_pmap_recall, event_pmap_f1,
- event_maps_precision, event_maps_recall, event_maps_f1) = compare_events(events_truth, events_auto, id_dict_example_ui_log)
-
-event_precision = (event_activity_precision + event_main_obj_precision + event_maps_precision) / 3
-event_recall = (event_activity_recall + event_main_obj_recall + event_maps_recall) / 3
-event_f1 = (event_activity_f1 + event_main_obj_f1 + event_maps_f1) / 3
-
-# UI Objects
-(ui_obj_type_precision, ui_obj_type_recall, ui_obj_type_f1,
- ui_obj_cmap_precision, ui_obj_cmap_recall, ui_obj_cmap_f1,
- ui_obj_vmap_precision, ui_obj_vmap_recall, ui_obj_vmap_f1,
- ui_obj_part_of_precision, ui_obj_part_of_recall, ui_obj_part_of_f1,
- ui_obj_maps_precision, ui_obj_maps_recall, ui_obj_maps_f1) = compare_ui_objects(ui_objects_truth, ui_objects_auto, id_dict_example_ui_log)
-
-ui_obj_precision = (ui_obj_type_precision + ui_obj_maps_precision) / 2
-ui_obj_recall = (ui_obj_type_recall + ui_obj_maps_recall) / 2
-ui_obj_f1 = (ui_obj_type_f1 + ui_obj_maps_f1) / 2
-
-# Process Objects
-(process_obj_type_precision, process_obj_type_recall, process_obj_type_f1,
- process_obj_amap_precision, process_obj_amap_recall, process_obj_amap_f1) = compare_process_objects(process_objects_truth, process_objects_auto, id_dict_example_ui_log)
-
-process_obj_precision = (process_obj_type_precision + process_obj_amap_precision) / 2
-process_obj_recall = (process_obj_type_recall + process_obj_amap_recall) / 2
-process_obj_f1 = (process_obj_type_f1 + process_obj_amap_f1) / 2
-
-# log scores
-log_precision = (event_precision + ui_obj_precision + process_obj_precision) / 3
-log_recall = (event_recall + ui_obj_recall + process_obj_recall) / 3
-log_f1 = (event_f1 + ui_obj_f1 + process_obj_f1) / 3
-
-
-
-print("Log Scores:")
-print(f'-F1-Score: {log_f1}')
-print(f'-Precision: {log_precision}')
-print(f'-Recall: {log_recall}')
-print("-"*65)
-print("-Event Scores:")
-print(f'--F1-Score: {event_f1}')
-print(f'--Precision: {event_precision}')
-print(f'--Recall: {event_recall}')
-print()
-print("--Activities:")
-print(f'---F1-Score: {event_activity_f1}')
-print(f'---Precision: {event_activity_precision}')
-print(f'---Recall: {event_activity_recall}')
-print()
-print("--Main UI Objects:")
-print(f'---F1-Score: {event_main_obj_f1}')
-print(f'---Precision: {event_main_obj_precision}')
-print(f'---Recall: {event_main_obj_recall}')
-print()
-print("--Maps:")
-print(f'---F1-Score: {event_maps_f1}')
-print(f'---Precision: {event_maps_precision}')
-print(f'---Recall: {event_maps_recall}')
-print()
-print("---vmap:")
-print(f'----F1-Score: {event_vmap_f1}')
-print(f'----Precision: {event_vmap_precision}')
-print(f'----Recall: {event_vmap_recall}')
-print()
-print("---umap:")
-print(f'----F1-Score: {event_umap_f1}')
-print(f'----Precision: {event_umap_precision}')
-print(f'----Recall: {event_umap_recall}')
-print()
-print("---pmap:")
-print(f'----F1-Score: {event_pmap_f1}')
-print(f'----Precision: {event_pmap_precision}')
-print(f'----Recall: {event_pmap_recall}')
-print("-"*65)
-print("-UI Object Scores:")
-print(f'--F1-Score: {ui_obj_f1}')
-print(f'--Precision: {ui_obj_precision}')
-print(f'--Recall: {ui_obj_recall}')
-print()
-print("--Object Types:")
-print(f'---F1-Score: {ui_obj_type_f1}')
-print(f'---Precision: {ui_obj_type_precision}')
-print(f'---Recall: {ui_obj_type_recall}')
-print()
-print("--Maps:")
-print(f'---F1-Score: {ui_obj_maps_f1}')
-print(f'---Precision: {ui_obj_maps_precision}')
-print(f'---Recall: {ui_obj_maps_recall}')
-print()
-print("---cmap:")
-print(f'----F1-Score: {ui_obj_cmap_f1}')
-print(f'----Precision: {ui_obj_cmap_precision}')
-print(f'----Recall: {ui_obj_cmap_recall}')
-print()
-print("---vmap:")
-print(f'----F1-Score: {ui_obj_vmap_f1}')
-print(f'----Precision: {ui_obj_vmap_precision}')
-print(f'----Recall: {ui_obj_vmap_recall}')
-print()
-print("---part of:")
-print(f'----F1-Score: {ui_obj_part_of_f1}')
-print(f'----Precision: {ui_obj_part_of_precision}')
-print(f'----Recall: {ui_obj_part_of_recall}')
-print("-"*65)
-print("-Process Object Scores:")
-print(f'--F1-Score: {process_obj_f1}')
-print(f'--Precision: {process_obj_precision}')
-print(f'--Recall: {process_obj_recall}')
-print()
-print("--Object Types:")
-print(f'---F1-Score: {process_obj_type_f1}')
-print(f'---Precision: {process_obj_type_precision}')
-print(f'---Recall: {process_obj_type_recall}')
-print()
-print("--amap:")
-print(f'---F1-Score: {process_obj_amap_f1}')
-print(f'---Precision: {process_obj_amap_precision}')
-print(f'---Recall: {process_obj_amap_recall}')
+calculate_scores(json_truth, json_auto, id_dict_student_record)
