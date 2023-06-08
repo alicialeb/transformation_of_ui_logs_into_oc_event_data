@@ -54,9 +54,9 @@ import os
 # else:
 #     raise ValueError("Unsupported file format. Please choose a file of type csv, xls, or xlsx instead.")
 
-log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\example_ui_log.xlsx',  dtype=str)
+#log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\example_ui_log.xlsx',  dtype=str)
 
-#log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\student_record.xlsx',  dtype=str)
+log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\student_record.xlsx',  dtype=str)
 
 threshold_ui_obj = 0.15  # for ui object columns
 threshold_act = 0.2  # for activity columns

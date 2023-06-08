@@ -129,7 +129,7 @@ def compare_events(events_truth, events_auto, id_dict):
 
             for label_truth, value_truth in vmap_truth.items():
                 # check if key-value pairs match
-                if label_truth in vmap_auto and vmap_auto[label_truth] == value_truth:
+                if label_truth in vmap_auto and str(vmap_auto[label_truth]).lower() == str(value_truth).lower():
                     vmap_tp += 1
                     maps_tp += 1
                 else:
@@ -295,7 +295,7 @@ def compare_ui_objects(ui_obj_truth, ui_obj_auto, id_dict):
                 maps_tp += 1
 
             for label_truth, value_truth in cmap_truth.items():
-                if label_truth in cmap_auto and cmap_auto[label_truth] == value_truth:
+                if label_truth in cmap_auto and str(cmap_auto[label_truth]).lower() == str(value_truth).lower():
                     cmap_tp += 1
                     maps_tp += 1
                 else:
@@ -317,7 +317,7 @@ def compare_ui_objects(ui_obj_truth, ui_obj_auto, id_dict):
                 maps_tp += 1
 
             for label_truth, value_truth in vmap_truth.items():
-                if label_truth in vmap_auto and vmap_auto[label_truth] == value_truth:
+                if label_truth in vmap_auto and str(vmap_auto[label_truth]).lower() == str(value_truth).lower():
                     vmap_tp += 1
                     maps_tp += 1
                 else:
@@ -436,11 +436,11 @@ def compare_process_objects(process_obj_truth, process_obj_auto, id_dict):
                 amap_tp += 1
 
             for label_truth, value_truth in amap_truth.items():
-                if label_truth in amap_auto and amap_auto[label_truth] == value_truth:
+                if label_truth in amap_auto and str(amap_auto[label_truth]).lower() == str(value_truth).lower():
                     amap_tp += 1
                 else:
                     amap_fn += 1
-            # check for any additional key-value pairs in automatically generated cmap
+            # check for any additional key-value pairs in automatically generated amap
             for label_auto, value_auto in amap_auto.items():
                 if label_auto not in amap_truth:
                     amap_fp += 1
@@ -523,83 +523,94 @@ process_obj_precision = (process_obj_type_precision + process_obj_amap_precision
 process_obj_recall = (process_obj_type_recall + process_obj_amap_recall) / 2
 process_obj_f1 = (process_obj_type_f1 + process_obj_amap_f1) / 2
 
-print("Events:")
-print(f'-F1-Score: {event_f1}')
-print(f'-Precision: {event_precision}')
-print(f'-Recall: {event_recall}')
-print()
-print("-Activities:")
-print(f'--F1-Score: {event_activity_f1}')
-print(f'--Precision: {event_activity_precision}')
-print(f'--Recall: {event_activity_recall}')
-print()
-print("-Main UI Objects:")
-print(f'--F1-Score: {event_main_obj_f1}')
-print(f'--Precision: {event_main_obj_precision}')
-print(f'--Recall: {event_main_obj_recall}')
-print()
-print("-Maps:")
-print(f'--F1-Score: {event_maps_f1}')
-print(f'--Precision: {event_maps_precision}')
-print(f'--Recall: {event_maps_recall}')
-print()
-print("--vmap:")
-print(f'---F1-Score: {event_vmap_f1}')
-print(f'---Precision: {event_vmap_precision}')
-print(f'---Recall: {event_vmap_recall}')
-print()
-print("--umap:")
-print(f'---F1-Score: {event_umap_f1}')
-print(f'---Precision: {event_umap_precision}')
-print(f'---Recall: {event_umap_recall}')
-print()
-print("--pmap:")
-print(f'---F1-Score: {event_pmap_f1}')
-print(f'---Precision: {event_pmap_precision}')
-print(f'---Recall: {event_pmap_recall}')
+# log scores
+log_precision = (event_precision + ui_obj_precision + process_obj_precision) / 3
+log_recall = (event_recall + ui_obj_recall + process_obj_recall) / 3
+log_f1 = (event_f1 + ui_obj_f1 + process_obj_f1) / 3
+
+
+
+print("Log Scores:")
+print(f'-F1-Score: {log_f1}')
+print(f'-Precision: {log_precision}')
+print(f'-Recall: {log_recall}')
 print("-"*65)
-print("UI Objects:")
-print(f'-F1-Score: {ui_obj_f1}')
-print(f'-Precision: {ui_obj_precision}')
-print(f'-Recall: {ui_obj_recall}')
+print("-Event Scores:")
+print(f'--F1-Score: {event_f1}')
+print(f'--Precision: {event_precision}')
+print(f'--Recall: {event_recall}')
 print()
-print("-Object Types:")
-print(f'--F1-Score: {ui_obj_type_f1}')
-print(f'--Precision: {ui_obj_type_precision}')
-print(f'--Recall: {ui_obj_type_recall}')
+print("--Activities:")
+print(f'---F1-Score: {event_activity_f1}')
+print(f'---Precision: {event_activity_precision}')
+print(f'---Recall: {event_activity_recall}')
 print()
-print("-Maps:")
-print(f'--F1-Score: {ui_obj_maps_f1}')
-print(f'--Precision: {ui_obj_maps_precision}')
-print(f'--Recall: {ui_obj_maps_recall}')
+print("--Main UI Objects:")
+print(f'---F1-Score: {event_main_obj_f1}')
+print(f'---Precision: {event_main_obj_precision}')
+print(f'---Recall: {event_main_obj_recall}')
 print()
-print("--cmap:")
-print(f'---F1-Score: {ui_obj_cmap_f1}')
-print(f'---Precision: {ui_obj_cmap_precision}')
-print(f'---Recall: {ui_obj_cmap_recall}')
+print("--Maps:")
+print(f'---F1-Score: {event_maps_f1}')
+print(f'---Precision: {event_maps_precision}')
+print(f'---Recall: {event_maps_recall}')
 print()
-print("--vmap:")
-print(f'---F1-Score: {ui_obj_vmap_f1}')
-print(f'---Precision: {ui_obj_vmap_precision}')
-print(f'---Recall: {ui_obj_vmap_recall}')
+print("---vmap:")
+print(f'----F1-Score: {event_vmap_f1}')
+print(f'----Precision: {event_vmap_precision}')
+print(f'----Recall: {event_vmap_recall}')
 print()
-print("--part of:")
-print(f'---F1-Score: {ui_obj_part_of_f1}')
-print(f'---Precision: {ui_obj_part_of_precision}')
-print(f'---Recall: {ui_obj_part_of_recall}')
+print("---umap:")
+print(f'----F1-Score: {event_umap_f1}')
+print(f'----Precision: {event_umap_precision}')
+print(f'----Recall: {event_umap_recall}')
+print()
+print("---pmap:")
+print(f'----F1-Score: {event_pmap_f1}')
+print(f'----Precision: {event_pmap_precision}')
+print(f'----Recall: {event_pmap_recall}')
 print("-"*65)
-print("Process Objects:")
+print("-UI Object Scores:")
+print(f'--F1-Score: {ui_obj_f1}')
+print(f'--Precision: {ui_obj_precision}')
+print(f'--Recall: {ui_obj_recall}')
 print()
-print(f'-F1-Score: {process_obj_f1}')
-print(f'-Precision: {process_obj_precision}')
-print(f'-Recall: {process_obj_recall}')
+print("--Object Types:")
+print(f'---F1-Score: {ui_obj_type_f1}')
+print(f'---Precision: {ui_obj_type_precision}')
+print(f'---Recall: {ui_obj_type_recall}')
 print()
-print("-Object Types:")
-print(f'--F1-Score: {process_obj_type_f1}')
-print(f'--Precision: {process_obj_type_precision}')
-print(f'--Recall: {process_obj_type_recall}')
+print("--Maps:")
+print(f'---F1-Score: {ui_obj_maps_f1}')
+print(f'---Precision: {ui_obj_maps_precision}')
+print(f'---Recall: {ui_obj_maps_recall}')
 print()
-print("-amap:")
-print(f'--F1-Score: {process_obj_amap_f1}')
-print(f'--Precision: {process_obj_amap_precision}')
-print(f'--Recall: {process_obj_amap_recall}')
+print("---cmap:")
+print(f'----F1-Score: {ui_obj_cmap_f1}')
+print(f'----Precision: {ui_obj_cmap_precision}')
+print(f'----Recall: {ui_obj_cmap_recall}')
+print()
+print("---vmap:")
+print(f'----F1-Score: {ui_obj_vmap_f1}')
+print(f'----Precision: {ui_obj_vmap_precision}')
+print(f'----Recall: {ui_obj_vmap_recall}')
+print()
+print("---part of:")
+print(f'----F1-Score: {ui_obj_part_of_f1}')
+print(f'----Precision: {ui_obj_part_of_precision}')
+print(f'----Recall: {ui_obj_part_of_recall}')
+print("-"*65)
+print("-Process Object Scores:")
+print(f'--F1-Score: {process_obj_f1}')
+print(f'--Precision: {process_obj_precision}')
+print(f'--Recall: {process_obj_recall}')
+print()
+print("--Object Types:")
+print(f'---F1-Score: {process_obj_type_f1}')
+print(f'---Precision: {process_obj_type_precision}')
+print(f'---Recall: {process_obj_type_recall}')
+print()
+print("--amap:")
+print(f'---F1-Score: {process_obj_amap_f1}')
+print(f'---Precision: {process_obj_amap_precision}')
+print(f'---Recall: {process_obj_amap_recall}')
