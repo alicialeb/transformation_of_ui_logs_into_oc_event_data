@@ -954,6 +954,9 @@ def get_log_micro_f1():
     with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\oc_example_ui_log.json', 'r') as file2:
         json_auto = file2.read()
 
-    log_micro_f1 = calculate_scores(json_truth, json_auto, id_dict_example_ui_log)
+    try:
+        log_micro_f1 = calculate_scores(json_truth, json_auto, id_dict_example_ui_log)
+    except KeyError:
+        log_micro_f1 = 0
 
     return log_micro_f1

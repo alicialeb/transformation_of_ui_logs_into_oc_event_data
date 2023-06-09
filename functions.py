@@ -870,9 +870,10 @@ def get_potential_process_obj_cols(cont_att_cols, url_match_count_dictionary):
     for col in cont_att_cols:
         pot_process_obj_cols.append(col)
 
-    # columns including urls are unlikely to include process object types
-    for col in url_match_count_dictionary:
-        pot_process_obj_cols.remove(col)
+    if pot_process_obj_cols:
+        # columns including urls are unlikely to include process object types
+        for col in url_match_count_dictionary:
+            pot_process_obj_cols.remove(col)
 
     return pot_process_obj_cols
 
@@ -2220,7 +2221,7 @@ def merge_dicts_and_create_json(events_dict, ui_obj_dict, process_obj_dict):
     oc_dict.setdefault('process_objects', process_obj_dict) # add process object dictionary
 
     # create a new json file and write the dictionary to the file
-    with open('oc_student_record.json', 'w') as f:
+    with open('oc_example_ui_log.json', 'w') as f:
         json.dump(oc_dict, f)
 # </editor-fold>
 
