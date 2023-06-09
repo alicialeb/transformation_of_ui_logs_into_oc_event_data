@@ -276,7 +276,20 @@ def compare_events(events_truth, events_auto, id_dict):
     maps_fp = 0
     maps_fn = 0
 
+    event_tp = 0
+    event_fp = 0
+    event_fn = 0
+
     for event_key_truth, event_labels_truth in events_truth.items():
+
+        # set local variables to zero, so it can be decided if the entire event is a tp, fn, or fp
+        activity_fp_local = 0
+        activity_fn_local = 0
+        main_obj_fp_local = 0
+        main_obj_fn_local = 0
+        maps_fp_local = 0
+        maps_fn_local = 0
+
         if event_key_truth in id_dict:
             event_key_auto = id_dict[event_key_truth]
             event_labels_auto = events_auto[event_key_auto]
@@ -287,8 +300,10 @@ def compare_events(events_truth, events_auto, id_dict):
             else:
                 if not pd.isna(event_labels_truth["activity"]):
                     activity_fn += 1
+                    activity_fn_local += 1
                 if not pd.isna(event_labels_auto["activity"]):
                     activity_fp += 1
+                    activity_fp_local += 1
 
             # main objects
             if str(event_labels_truth["main object"]).lower() == str(event_labels_auto["main object"]).lower():
@@ -296,8 +311,10 @@ def compare_events(events_truth, events_auto, id_dict):
             else:
                 if not pd.isna(event_labels_truth["main object"]):
                     main_obj_fn += 1
+                    main_obj_fn_local += 1
                 if not pd.isna(event_labels_auto["main object"]):
                     main_obj_fp += 1
+                    main_obj_fp_local += 1
 
             # vmap
             vmap_truth = event_labels_truth["vmap"]
@@ -316,11 +333,13 @@ def compare_events(events_truth, events_auto, id_dict):
                 else:
                     vmap_fn += 1
                     maps_fn += 1
+                    maps_fn_local += 1
             # check for any additional key-value pairs in automatically generated vmap
             for label_auto, value_auto in vmap_auto.items():
                 if label_auto not in vmap_truth:
                     vmap_fp += 1
                     maps_fp += 1
+                    maps_fp_local += 1
 
             # umap
             umap_truth = event_labels_truth["umap"]
@@ -342,10 +361,12 @@ def compare_events(events_truth, events_auto, id_dict):
             only_in_truth = set_truth - set_auto
             umap_fn += len(only_in_truth)
             maps_fn += len(only_in_truth)
+            maps_fn_local += len(only_in_truth)
             # find values in umap_auto but not in umap_truth
             only_in_auto = set_auto - set_truth
             umap_fp += len(only_in_auto)
             maps_fp += len(only_in_auto)
+            maps_fp_local += len(only_in_auto)
 
             # pmap
             pmap_truth = event_labels_truth["pmap"]
@@ -367,47 +388,86 @@ def compare_events(events_truth, events_auto, id_dict):
             only_in_truth = set_truth - set_auto
             pmap_fn += len(only_in_truth)
             maps_fn += len(only_in_truth)
+            maps_fn_local += len(only_in_truth)
             # find values in pmap_auto but not in pmap_truth
             only_in_auto = set_auto - set_truth
             pmap_fp += len(only_in_auto)
             maps_fp += len(only_in_auto)
+            maps_fp_local += len(only_in_auto)
 
         else:
             # count values and add to fn
             if not pd.isna(event_labels_truth["activity"]):
                 activity_fn += 1
+                activity_fn_local += 1
 
             if not pd.isna(event_labels_truth["main object"]):
                 main_obj_fn += 1
+                main_obj_fn_local += 1
 
             inner_dict = event_labels_truth["vmap"]
             vmap_fn += len(inner_dict.keys()) # count values included in value map
             maps_fn += len(inner_dict.keys())
+            maps_fn_local += len(inner_dict.keys())
 
             umap_fn += len(event_labels_truth["umap"])  # count values included in the list umap
             maps_fn += len(event_labels_truth["umap"])
+            maps_fn_local += len(event_labels_truth["umap"])
 
             pmap_fn += len(event_labels_truth["pmap"])  # count values included in the list pmap
             maps_fn += len(event_labels_truth["pmap"])
+            maps_fn_local += len(event_labels_truth["pmap"])
+
+        # count macro TP
+        if activity_fn_local == 0 and activity_fp_local == 0 and main_obj_fn_local == 0 and main_obj_fp_local == 0 and maps_fn_local == 0 and maps_fp_local == 0:
+            event_tp += 1
+
+        else:
+            if activity_fn_local != 0 or main_obj_fn_local != 0 or maps_fn_local != 0:
+                event_fn += 1
+            if activity_fp_local != 0 or main_obj_fp_local != 0 or maps_fp_local != 0:
+                event_fp += 1
 
     for event_key_auto, event_labels_auto in events_auto.items():
+
+        # set local variables to zero, so it can be decided if the entire event is a tp, fn, or fp
+        activity_fp_local = 0
+        activity_fn_local = 0
+        main_obj_fp_local = 0
+        main_obj_fn_local = 0
+        maps_fp_local = 0
+        maps_fn_local = 0
+
+        # cases where an event is in the automated json but not in ground truth json
         if event_key_auto not in id_dict.values():
             # count values and add to fp
             if not pd.isna(event_labels_auto["activity"]):
                 activity_fp += 1
+                activity_fp_local += 1
 
             if not pd.isna(event_labels_auto["main object"]):
                 main_obj_fp += 1
+                main_obj_fp_local += 1
 
             inner_dict = event_labels_auto["vmap"]
             vmap_fp += len(inner_dict.keys())  # count values included in value map
             maps_fp += len(inner_dict.keys())
+            maps_fp_local += len(inner_dict.keys())
 
             umap_fp += len(event_labels_auto["umap"])  # count values included in the list umap
             maps_fp += len(event_labels_auto["umap"])
+            maps_fp_local += len(event_labels_auto["umap"])
 
             pmap_fp += len(event_labels_auto["pmap"])  # count values included in the list pmap
             maps_fp += len(event_labels_auto["pmap"])
+            maps_fp_local += len(event_labels_auto["pmap"])
+
+            # count macro TP
+            if activity_fn_local != 0 or main_obj_fn_local != 0 or maps_fn_local != 0:
+                event_fn += 1
+            if activity_fp_local != 0 or main_obj_fp_local != 0 or maps_fp_local != 0:
+                event_fp += 1
+
 
     # calculate scores
     event_activity_precision, event_activity_recall, event_activity_f1 = calculate_precision_recall_f1(activity_tp,
@@ -420,6 +480,7 @@ def compare_events(events_truth, events_auto, id_dict):
     event_umap_precision, event_umap_recall, event_umap_f1 = calculate_precision_recall_f1(umap_tp, umap_fp, umap_fn)
     event_pmap_precision, event_pmap_recall, event_pmap_f1 = calculate_precision_recall_f1(pmap_tp, pmap_fp, pmap_fn)
     event_maps_precision, event_maps_recall, event_maps_f1 = calculate_precision_recall_f1(maps_tp, maps_fp, maps_fn)
+    event_macro_precision, event_macro_recall, event_macro_f1 = calculate_precision_recall_f1(event_tp, event_fp, event_fn)
 
     return (
         event_activity_precision, event_activity_recall, event_activity_f1,
@@ -427,7 +488,8 @@ def compare_events(events_truth, events_auto, id_dict):
         event_vmap_precision, event_vmap_recall, event_vmap_f1,
         event_umap_precision, event_umap_recall, event_umap_f1,
         event_pmap_precision, event_pmap_recall, event_pmap_f1,
-        event_maps_precision, event_maps_recall, event_maps_f1
+        event_maps_precision, event_maps_recall, event_maps_f1,
+        event_macro_precision, event_macro_recall, event_macro_f1
     )
 
 def compare_ui_objects(ui_obj_truth, ui_obj_auto, id_dict):
@@ -452,7 +514,18 @@ def compare_ui_objects(ui_obj_truth, ui_obj_auto, id_dict):
     maps_fp = 0
     maps_fn = 0
 
+    ui_obj_tp = 0
+    ui_obj_fp = 0
+    ui_obj_fn = 0
+
     for ui_obj_key_truth, ui_obj_labels_truth in ui_obj_truth.items():
+
+        # set local variables to zero, so it can be decided if the entire object is a tp, fn, or fp
+        type_fp_local = 0
+        type_fn_local = 0
+        maps_fp_local = 0
+        maps_fn_local = 0
+
         if ui_obj_key_truth in id_dict:
             ui_obj_key_auto = id_dict[ui_obj_key_truth]
             ui_obj_labels_auto = ui_obj_auto[ui_obj_key_auto]
@@ -463,8 +536,10 @@ def compare_ui_objects(ui_obj_truth, ui_obj_auto, id_dict):
             else:
                 if not pd.isna(ui_obj_labels_truth["type"]):
                     type_fn += 1
+                    type_fn_local += 1
                 if not pd.isna(ui_obj_labels_auto["type"]):
                     type_fp += 1
+                    type_fp_local += 1
 
             # cmap
             cmap_truth = ui_obj_labels_truth["cmap"]
@@ -482,11 +557,13 @@ def compare_ui_objects(ui_obj_truth, ui_obj_auto, id_dict):
                 else:
                     cmap_fn += 1
                     maps_fn += 1
+                    maps_fn_local += 1
             # check for any additional key-value pairs in automatically generated cmap
             for label_auto, value_auto in cmap_auto.items():
                 if label_auto not in cmap_truth:
                     cmap_fp += 1
                     maps_fp += 1
+                    maps_fp_local += 1
 
             # vmap
             vmap_truth = ui_obj_labels_truth["vmap"]
@@ -504,11 +581,13 @@ def compare_ui_objects(ui_obj_truth, ui_obj_auto, id_dict):
                 else:
                     vmap_fn += 1
                     maps_fn += 1
+                    maps_fn_local += 1
             # Check for any additional key-value pairs in automatically generated vmap
             for label_auto, value_auto in vmap_auto.items():
                 if label_auto not in vmap_truth:
                     vmap_fp += 1
                     maps_fp += 1
+                    maps_fp_local += 1
 
             # part_of
             part_of_truth = ui_obj_labels_truth["part of"]
@@ -530,43 +609,75 @@ def compare_ui_objects(ui_obj_truth, ui_obj_auto, id_dict):
             only_in_truth = set_truth - set_auto
             part_of_fn += len(only_in_truth)
             maps_fn += len(only_in_truth)
+            maps_fn_local += len(only_in_truth)
             # find values in part_of_auto but not in part_of_truth
             only_in_auto = set_auto - set_truth
             part_of_fp += len(only_in_auto)
             maps_fp += len(only_in_auto)
+            maps_fp_local += len(only_in_auto)
 
         else:
             # count values and add to fn
             if not pd.isna(ui_obj_labels_truth["type"]):
                type_fn += 1
+               type_fn_local += 1
 
             inner_dict = ui_obj_labels_truth["cmap"]
             cmap_fn += len(inner_dict.keys())  # count values included in context attribute map
             maps_fn += len(inner_dict.keys())
+            maps_fn_local += len(inner_dict.keys())
 
             inner_dict = ui_obj_labels_truth["vmap"]
             vmap_fn += len(inner_dict.keys()) # count values included in value attribute map
             maps_fn += len(inner_dict.keys())
+            maps_fn_local += len(inner_dict.keys())
 
             part_of_fn += len(ui_obj_labels_truth["part of"])  # count values included in the list object map
             maps_fn += len(ui_obj_labels_truth["part of"])
+            maps_fn_local += len(ui_obj_labels_truth["part of"])
+
+        # count macro TP
+        if type_fn == 0 and type_fp == 0 and maps_fn == 0 and maps_fp == 0:
+            ui_obj_tp += 1
+
+        else:
+            if type_fn_local != 0 or maps_fn_local != 0:
+                ui_obj_fn += 1
+            if type_fp_local != 0 or maps_fp_local != 0:
+                ui_obj_fp += 1
 
     for ui_obj_key_auto, ui_obj_labels_auto in ui_obj_auto.items():
+
+        # set local variables to zero, so it can be decided if the entire object is a tp, fn, or fp
+        type_fp_local = 0
+        type_fn_local = 0
+        maps_fp_local = 0
+        maps_fn_local = 0
+
         if ui_obj_key_auto not in id_dict.values():
             # count values and add to fp
             if not pd.isna(ui_obj_labels_auto["type"]):
                 type_fp += 1
+                type_fp_local += 1
 
             inner_dict = ui_obj_labels_auto["cmap"]
             cmap_fp += len(inner_dict.keys())  # count values included in value map
             maps_fp += len(inner_dict.keys())
+            maps_fp_local += len(inner_dict.keys())
 
             inner_dict = ui_obj_labels_auto["vmap"]
             vmap_fp += len(inner_dict.keys())  # count values included in value map
             maps_fp += len(inner_dict.keys())
+            maps_fp_local += len(inner_dict.keys())
 
             part_of_fp += len(ui_obj_labels_auto["part of"])  # count values included in the list pmap
             maps_fp += len(ui_obj_labels_auto["part of"])
+            maps_fp_local += len(ui_obj_labels_auto["part of"])
+
+        if type_fn_local != 0 or maps_fn_local != 0:
+            ui_obj_fn += 1
+        if type_fp_local != 0 or maps_fp_local != 0:
+            ui_obj_fp += 1
 
     # calculate scores
     ui_obj_type_precision, ui_obj_type_recall, ui_obj_type_f1 = calculate_precision_recall_f1(type_tp, type_fp, type_fn)
@@ -576,12 +687,14 @@ def compare_ui_objects(ui_obj_truth, ui_obj_auto, id_dict):
                                                                                                        part_of_fp,
                                                                                                        part_of_fn)
     ui_obj_maps_precision, ui_obj_maps_recall, ui_obj_maps_f1 = calculate_precision_recall_f1(maps_tp, maps_fp, maps_fn)
+    ui_obj_macro_precision, ui_obj_macro_recall, ui_obj_macro_f1 = calculate_precision_recall_f1(ui_obj_tp, ui_obj_fp, ui_obj_fn)
 
     return (ui_obj_type_precision, ui_obj_type_recall, ui_obj_type_f1,
             ui_obj_cmap_precision, ui_obj_cmap_recall, ui_obj_cmap_f1,
             ui_obj_vmap_precision, ui_obj_vmap_recall, ui_obj_vmap_f1,
             ui_obj_part_of_precision, ui_obj_part_of_recall, ui_obj_part_of_f1,
-            ui_obj_maps_precision, ui_obj_maps_recall, ui_obj_maps_f1)
+            ui_obj_maps_precision, ui_obj_maps_recall, ui_obj_maps_f1,
+            ui_obj_macro_precision, ui_obj_macro_recall, ui_obj_macro_f1)
 
 
 def compare_process_objects(process_obj_truth, process_obj_auto, id_dict):
@@ -594,7 +707,18 @@ def compare_process_objects(process_obj_truth, process_obj_auto, id_dict):
     amap_fp = 0
     amap_fn = 0
 
+    process_obj_tp = 0
+    process_obj_fp = 0
+    process_obj_fn = 0
+
     for process_obj_key_truth, process_obj_labels_truth in process_obj_truth.items():
+
+        # set local variables to zero, so it can be decided if the entire object is a tp, fn, or fp
+        type_fp_local = 0
+        type_fn_local = 0
+        amap_fp_local = 0
+        amap_fn_local = 0
+
         if process_obj_key_truth in id_dict:
             process_obj_key_auto = id_dict[process_obj_key_truth]
             process_obj_labels_auto = process_obj_auto[process_obj_key_auto]
@@ -605,8 +729,10 @@ def compare_process_objects(process_obj_truth, process_obj_auto, id_dict):
             else:
                 if not pd.isna(process_obj_labels_truth["type"]):
                     type_fn += 1
+                    type_fn_local += 1
                 if not pd.isna(process_obj_labels_auto["type"]):
                     type_fp += 1
+                    type_fp_local += 1
 
             # amap
             amap_truth = process_obj_labels_truth["amap"]
@@ -621,37 +747,66 @@ def compare_process_objects(process_obj_truth, process_obj_auto, id_dict):
                     amap_tp += 1
                 else:
                     amap_fn += 1
+                    amap_fn_local += 1
             # check for any additional key-value pairs in automatically generated amap
             for label_auto, value_auto in amap_auto.items():
                 if label_auto not in amap_truth:
                     amap_fp += 1
+                    amap_fp_local += 1
 
         else:
             # count values and add to fn
             if not pd.isna(process_obj_labels_truth["type"]):
                type_fn += 1
+               type_fn_local += 1
 
             inner_dict = process_obj_labels_truth["amap"]
             amap_fn += len(inner_dict.keys())  # count values included in attribute map
-            amap_fn += len(inner_dict.keys())
+            amap_fn_local += len(inner_dict.keys())
+
+        # count macro TP
+        if type_fn_local == 0 and type_fp_local == 0 and amap_fn_local == 0 and amap_fp_local == 0:
+            process_obj_tp += 1
+
+        else:
+            if type_fn_local != 0 or amap_fn_local != 0:
+                process_obj_fn += 1
+            if type_fp_local != 0 or amap_fp_local != 0:
+                process_obj_fp += 1
 
     for process_obj_key_auto, process_obj_labels_auto in process_obj_auto.items():
+
+        # set local variables to zero, so it can be decided if the entire object is a tp, fn, or fp
+        type_fp_local = 0
+        type_fn_local = 0
+        amap_fp_local = 0
+        amap_fn_local = 0
+
         if process_obj_key_auto not in id_dict.values():
             # count values and add to fp
             if not pd.isna(process_obj_labels_auto["type"]):
                 type_fp += 1
+                type_fp_local += 1
 
             inner_dict = process_obj_labels_auto["amap"]
             amap_fp += len(inner_dict.keys())  # count values included in value map
+            amap_fp_local += len(inner_dict.keys())
+
+        if type_fn_local != 0 or amap_fn_local != 0:
+            process_obj_fn += 1
+        if type_fp_local != 0 or amap_fp_local != 0:
+            process_obj_fp += 1
 
     # calculate scores
     process_obj_type_precision, process_obj_type_recall, process_obj_type_f1 = calculate_precision_recall_f1(type_tp, type_fp, type_fn)
     process_obj_amap_precision, process_obj_amap_recall, process_obj_amap_f1 = calculate_precision_recall_f1(amap_tp, amap_fp, amap_fn)
+    process_obj_macro_precision, process_obj_macro_recall, process_obj_macro_f1 = calculate_precision_recall_f1(process_obj_tp, process_obj_fp, process_obj_fn)
 
 
     return (
         process_obj_type_precision, process_obj_type_recall, process_obj_type_f1,
-        process_obj_amap_precision, process_obj_amap_recall, process_obj_amap_f1
+        process_obj_amap_precision, process_obj_amap_recall, process_obj_amap_f1,
+        process_obj_macro_precision, process_obj_macro_recall, process_obj_macro_f1
     )
 
 
@@ -673,129 +828,132 @@ def calculate_scores(json_truth, json_auto, id_dict):
      event_vmap_precision, event_vmap_recall, event_vmap_f1,
      event_umap_precision, event_umap_recall, event_umap_f1,
      event_pmap_precision, event_pmap_recall, event_pmap_f1,
-     event_maps_precision, event_maps_recall, event_maps_f1) = compare_events(events_truth, events_auto, id_dict)
+     event_maps_precision, event_maps_recall, event_maps_f1,
+     event_macro_precision, event_macro_recall, event_macro_f1) = compare_events(events_truth, events_auto, id_dict)
 
-    event_precision = (event_activity_precision + event_main_obj_precision + event_maps_precision) / 3
-    event_recall = (event_activity_recall + event_main_obj_recall + event_maps_recall) / 3
-    event_f1 = (event_activity_f1 + event_main_obj_f1 + event_maps_f1) / 3
+    event_micro_precision = (event_activity_precision + event_main_obj_precision + event_maps_precision) / 3
+    event_micro_recall = (event_activity_recall + event_main_obj_recall + event_maps_recall) / 3
+    event_micro_f1 = (event_activity_f1 + event_main_obj_f1 + event_maps_f1) / 3
 
     # UI Objects
     (ui_obj_type_precision, ui_obj_type_recall, ui_obj_type_f1,
      ui_obj_cmap_precision, ui_obj_cmap_recall, ui_obj_cmap_f1,
      ui_obj_vmap_precision, ui_obj_vmap_recall, ui_obj_vmap_f1,
      ui_obj_part_of_precision, ui_obj_part_of_recall, ui_obj_part_of_f1,
-     ui_obj_maps_precision, ui_obj_maps_recall, ui_obj_maps_f1) = compare_ui_objects(ui_objects_truth, ui_objects_auto, id_dict)
+     ui_obj_maps_precision, ui_obj_maps_recall, ui_obj_maps_f1,
+     ui_obj_macro_precision, ui_obj_macro_recall, ui_obj_macro_f1) = compare_ui_objects(ui_objects_truth, ui_objects_auto, id_dict)
 
-    ui_obj_precision = (ui_obj_type_precision + ui_obj_maps_precision) / 2
-    ui_obj_recall = (ui_obj_type_recall + ui_obj_maps_recall) / 2
-    ui_obj_f1 = (ui_obj_type_f1 + ui_obj_maps_f1) / 2
+    ui_obj_micro_precision = (ui_obj_type_precision + ui_obj_maps_precision) / 2
+    ui_obj_micro_recall = (ui_obj_type_recall + ui_obj_maps_recall) / 2
+    ui_obj_micro_f1 = (ui_obj_type_f1 + ui_obj_maps_f1) / 2
 
     # Process Objects
     (process_obj_type_precision, process_obj_type_recall, process_obj_type_f1,
-     process_obj_amap_precision, process_obj_amap_recall, process_obj_amap_f1) = compare_process_objects(process_objects_truth, process_objects_auto, id_dict)
+     process_obj_amap_precision, process_obj_amap_recall, process_obj_amap_f1,
+     process_obj_macro_precision, process_obj_macro_recall, process_obj_macro_f1) = compare_process_objects(process_objects_truth, process_objects_auto, id_dict)
 
-    process_obj_precision = (process_obj_type_precision + process_obj_amap_precision) / 2
-    process_obj_recall = (process_obj_type_recall + process_obj_amap_recall) / 2
-    process_obj_f1 = (process_obj_type_f1 + process_obj_amap_f1) / 2
+    process_obj_micro_precision = (process_obj_type_precision + process_obj_amap_precision) / 2
+    process_obj_micro_recall = (process_obj_type_recall + process_obj_amap_recall) / 2
+    process_obj_micro_f1 = (process_obj_type_f1 + process_obj_amap_f1) / 2
 
-    # log scores
-    log_precision = (event_precision + ui_obj_precision + process_obj_precision) / 3
-    log_recall = (event_recall + ui_obj_recall + process_obj_recall) / 3
-    log_f1 = (event_f1 + ui_obj_f1 + process_obj_f1) / 3
+    # log scores micro
+    log_micro_precision = (event_micro_precision + ui_obj_micro_precision + process_obj_micro_precision) / 3
+    log_micro_recall = (event_micro_recall + ui_obj_micro_recall + process_obj_micro_recall) / 3
+    log_micro_f1 = (event_micro_f1 + ui_obj_micro_f1 + process_obj_micro_f1) / 3
 
+    # log scores micro without process object scores
+    log_micro_precision_light = (event_micro_precision + ui_obj_micro_precision) / 2
+    log_micro_recall_light = (event_micro_recall + ui_obj_micro_recall) / 2
+    log_micro_f1_light = (event_micro_f1 + ui_obj_micro_f1) / 2
 
+    # log scores macro
+    log_macro_precision = (event_macro_precision + ui_obj_macro_precision + process_obj_macro_precision) / 3
+    log_macro_recall = (event_macro_recall + ui_obj_macro_recall + process_obj_macro_recall) / 3
+    log_macro_f1 = (event_macro_f1 + ui_obj_macro_f1 + process_obj_macro_f1) / 3
 
-    print("Log Scores:")
-    print(f'-F1-Score: {log_f1}')
-    print(f'-Precision: {log_precision}')
-    print(f'-Recall: {log_recall}')
-    print("-"*65)
-    print("-Event Scores:")
-    print(f'--F1-Score: {event_f1}')
-    print(f'--Precision: {event_precision}')
-    print(f'--Recall: {event_recall}')
-    print()
-    print("--Activities:")
-    print(f'---F1-Score: {event_activity_f1}')
-    print(f'---Precision: {event_activity_precision}')
-    print(f'---Recall: {event_activity_recall}')
-    print()
-    print("--Main UI Objects:")
-    print(f'---F1-Score: {event_main_obj_f1}')
-    print(f'---Precision: {event_main_obj_precision}')
-    print(f'---Recall: {event_main_obj_recall}')
-    print()
-    print("--Maps:")
-    print(f'---F1-Score: {event_maps_f1}')
-    print(f'---Precision: {event_maps_precision}')
-    print(f'---Recall: {event_maps_recall}')
-    print()
-    print("---vmap:")
-    print(f'----F1-Score: {event_vmap_f1}')
-    print(f'----Precision: {event_vmap_precision}')
-    print(f'----Recall: {event_vmap_recall}')
-    print()
-    print("---umap:")
-    print(f'----F1-Score: {event_umap_f1}')
-    print(f'----Precision: {event_umap_precision}')
-    print(f'----Recall: {event_umap_recall}')
-    print()
-    print("---pmap:")
-    print(f'----F1-Score: {event_pmap_f1}')
-    print(f'----Precision: {event_pmap_precision}')
-    print(f'----Recall: {event_pmap_recall}')
-    print("-"*65)
-    print("-UI Object Scores:")
-    print(f'--F1-Score: {ui_obj_f1}')
-    print(f'--Precision: {ui_obj_precision}')
-    print(f'--Recall: {ui_obj_recall}')
-    print()
-    print("--Object Types:")
-    print(f'---F1-Score: {ui_obj_type_f1}')
-    print(f'---Precision: {ui_obj_type_precision}')
-    print(f'---Recall: {ui_obj_type_recall}')
-    print()
-    print("--Maps:")
-    print(f'---F1-Score: {ui_obj_maps_f1}')
-    print(f'---Precision: {ui_obj_maps_precision}')
-    print(f'---Recall: {ui_obj_maps_recall}')
-    print()
-    print("---cmap:")
-    print(f'----F1-Score: {ui_obj_cmap_f1}')
-    print(f'----Precision: {ui_obj_cmap_precision}')
-    print(f'----Recall: {ui_obj_cmap_recall}')
-    print()
-    print("---vmap:")
-    print(f'----F1-Score: {ui_obj_vmap_f1}')
-    print(f'----Precision: {ui_obj_vmap_precision}')
-    print(f'----Recall: {ui_obj_vmap_recall}')
-    print()
-    print("---part of:")
-    print(f'----F1-Score: {ui_obj_part_of_f1}')
-    print(f'----Precision: {ui_obj_part_of_precision}')
-    print(f'----Recall: {ui_obj_part_of_recall}')
-    print("-"*65)
-    print("-Process Object Scores:")
-    print(f'--F1-Score: {process_obj_f1}')
-    print(f'--Precision: {process_obj_precision}')
-    print(f'--Recall: {process_obj_recall}')
-    print()
-    print("--Object Types:")
-    print(f'---F1-Score: {process_obj_type_f1}')
-    print(f'---Precision: {process_obj_type_precision}')
-    print(f'---Recall: {process_obj_type_recall}')
-    print()
-    print("--amap:")
-    print(f'---F1-Score: {process_obj_amap_f1}')
-    print(f'---Precision: {process_obj_amap_precision}')
-    print(f'---Recall: {process_obj_amap_recall}')
+    # log scores macro without process object scores
+    log_macro_precision_light = (event_macro_precision + ui_obj_macro_precision) / 2
+    log_macro_recall_light = (event_macro_recall + ui_obj_macro_recall) / 2
+    log_macro_f1_light = (event_macro_f1 + ui_obj_macro_f1) / 2
 
+    # log_scores_df = pd.DataFrame([
+    #     ["Log Scores Including Event, UI Object, and Process Object Scores:", "", "", ""],
+    #     ["", "F1", "Precision", "Recall"],
+    #     ["Macro", log_macro_f1, log_macro_precision, log_macro_recall],
+    #     ["Micro", log_micro_f1, log_micro_precision, log_micro_recall],
+    #     ["", "", "", ""],
+    #     ["Log Scores without Process Object Scores:", "", "", ""],
+    #     ["", "F1", "Precision", "Recall"],
+    #     ["Macro", log_macro_f1_light, log_macro_precision_light, log_macro_recall_light],
+    #     ["Micro", log_micro_f1_light, log_micro_precision_light, log_micro_recall_light]
+    # ], columns=["", "", "", ""])
+    #
+    # event_scores_df = pd.DataFrame([
+    #     ["Event Scores:", "", "", ""],
+    #     ["", "F1", "Precision", "Recall"],
+    #     ["Macro", event_macro_f1, event_macro_precision, event_macro_recall],
+    #     ["Micro", event_micro_f1, event_micro_precision, event_micro_recall],
+    #     ["", "", "", ""],
+    #     ["Event Sub-Part Scores:", "", "", ""],
+    #     ["", "F1", "Precision", "Recall"],
+    #     ["Activities:", event_activity_f1, event_activity_precision, event_activity_recall],
+    #     ["Main UI Objects:", event_main_obj_f1, event_main_obj_precision, event_main_obj_recall],
+    #     ["Maps:", event_maps_f1, event_maps_precision, event_maps_recall],
+    #     ["vmap:", event_vmap_f1, event_vmap_precision, event_vmap_recall],
+    #     ["umap:", event_umap_f1, event_umap_precision, event_umap_recall],
+    #     ["pmap:", event_pmap_f1, event_pmap_precision, event_pmap_recall]
+    # ], columns=["", "", "", ""])
+    #
+    # ui_obj_scores_df = pd.DataFrame([
+    #     ["UI Object Scores:", "", "", ""],
+    #     ["", "F1", "Precision", "Recall"],
+    #     ["Macro", ui_obj_macro_f1, ui_obj_macro_precision, ui_obj_macro_recall],
+    #     ["Micro", ui_obj_micro_f1, ui_obj_micro_precision, ui_obj_micro_recall],
+    #     ["", "", "", ""],
+    #     ["UI Object Sub-Part Scores:", "", "", ""],
+    #     ["", "F1", "Precision", "Recall"],
+    #     ["Types:", ui_obj_type_f1, ui_obj_type_precision, ui_obj_type_recall],
+    #     ["Maps:", ui_obj_maps_f1, ui_obj_maps_precision, ui_obj_maps_recall],
+    #     ["cmap:", ui_obj_cmap_f1, ui_obj_cmap_precision, ui_obj_cmap_recall],
+    #     ["vmap:", ui_obj_vmap_f1, ui_obj_vmap_precision, ui_obj_vmap_recall],
+    #     ["part of:", ui_obj_part_of_f1, ui_obj_part_of_precision, ui_obj_part_of_recall]
+    # ], columns=["", "", "", ""])
+    #
+    # process_obj_scores_df = pd.DataFrame([
+    #     ["Process Object Scores:", "", "", ""],
+    #     ["", "F1", "Precision", "Recall"],
+    #     ["Macro", process_obj_macro_f1, process_obj_macro_precision, process_obj_macro_recall],
+    #     ["Micro", process_obj_micro_f1, process_obj_micro_precision, process_obj_micro_recall],
+    #     ["", "", "", ""],
+    #     ["Process Object Sub-Part Scores:", "", "", ""],
+    #     ["", "F1", "Precision", "Recall"],
+    #     ["Types:", process_obj_type_f1, process_obj_type_precision, process_obj_type_recall],
+    #     ["amap:", process_obj_amap_f1, process_obj_amap_precision, process_obj_amap_recall]
+    # ], columns=["", "", "", ""])
+    #
+    # # Create an Excel writer object
+    #
+    # writer = pd.ExcelWriter('scores.xlsx', engine='xlsxwriter')
+    #
+    # # Write each data frame to a separate sheet in the Excel file
+    # log_scores_df.to_excel(writer, sheet_name='Log Scores', index=False, header=False)
+    # event_scores_df.to_excel(writer, sheet_name='Event Scores', index=False, header=False)
+    # ui_obj_scores_df.to_excel(writer, sheet_name='UI Object Scores', index=False, header=False)
+    # process_obj_scores_df.to_excel(writer, sheet_name='Process Object Scores', index=False, header=False)
+    #
+    # # Save and close the Excel file
+    # writer.close()
 
-# read the contents of the JSON files
-with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\json_student_record.json', 'r') as file1:
-    json_truth = file1.read()
+    return log_micro_f1
 
-with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\oc_student_record.json', 'r') as file2:
-    json_auto = file2.read()
+def get_log_micro_f1():
+    # read the contents of the JSON files
+    with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\json_example.json', 'r') as file1:
+        json_truth = file1.read()
 
-calculate_scores(json_truth, json_auto, id_dict_student_record)
+    with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\oc_example_ui_log.json', 'r') as file2:
+        json_auto = file2.read()
+
+    log_micro_f1 = calculate_scores(json_truth, json_auto, id_dict_example_ui_log)
+
+    return log_micro_f1
