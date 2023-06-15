@@ -16,8 +16,8 @@
 			"timestamp": "2019-10-21T00:12:09.464Z",
 			"main object": "unknown_1",
 			"vmap": {
-                "unknown_1.content": "Albert"
-            },
+				"unknown_1.content": "Albert"
+			},
 			"umap": ["application_2"],
 			"pmap": ["user_1", "student_1"]
 		},
@@ -29,7 +29,7 @@
 				"field_1.target value": "Albert"
 			},
 			"umap": ["application_2"],
-			"pmap": [ "user_1", "student_1"]
+			"pmap": ["user_1", "student_1"]
 		},
 		"event_4": {
 			"activity": "copy",
@@ -1249,7 +1249,7 @@
 		}
 	},
 	"ui_objects": {
-        "application_1": {
+		"application_1": {
 			"type": "application",
 			"cmap": {
 				"target app": "Excel"
@@ -1257,7 +1257,7 @@
 			"vmap": {},
 			"part of": []
 		},
-        "application_2": {
+		"application_2": {
 			"type": "application",
 			"cmap": {
 				"target app": "Chrome"
@@ -1265,7 +1265,7 @@
 			"vmap": {},
 			"part of": []
 		},
-        "website_1": {
+		"website_1": {
 			"type": "website",
 			"cmap": {
 				"url": "https://forms.zoho.com/universityofmelbourne/form/NewRecord"
@@ -1273,7 +1273,7 @@
 			"vmap": {},
 			"part of": []
 		},
-        "link_1": {
+		"link_1": {
 			"type": "link",
 			"cmap": {
 				"url": "https://forms.zoho.com/universityofmelbourne/form/NewRecord/thankyou",
@@ -1285,7 +1285,7 @@
 			"vmap": {},
 			"part of": []
 		},
-        "file_1": {
+		"file_1": {
 			"type": "file",
 			"cmap": {
 				"target workbook name": "StudentRecords.xlsx"
@@ -1293,7 +1293,7 @@
 			"vmap": {},
 			"part of": ["application_1"]
 		},
-        "sheet_1": {
+		"sheet_1": {
 			"type": "sheet",
 			"cmap": {
 				"target sheet name": "Sheet1"
@@ -1301,7 +1301,7 @@
 			"vmap": {},
 			"part of": ["file_1"]
 		},
-        "cell_1": {
+		"cell_1": {
 			"type": "cell",
 			"cmap": {
 				"target id": "A3"
@@ -1312,7 +1312,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_2": {
+		"cell_2": {
 			"type": "cell",
 			"cmap": {
 				"target id": "B3"
@@ -1323,7 +1323,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_3": {
+		"cell_3": {
 			"type": "cell",
 			"cmap": {
 				"target id": "C3"
@@ -1334,7 +1334,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_4": {
+		"cell_4": {
 			"type": "cell",
 			"cmap": {
 				"target id": "D3"
@@ -1345,7 +1345,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_5": {
+		"cell_5": {
 			"type": "cell",
 			"cmap": {
 				"target id": "E3"
@@ -1356,7 +1356,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_6": {
+		"cell_6": {
 			"type": "cell",
 			"cmap": {
 				"target id": "F3"
@@ -1367,7 +1367,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_7": {
+		"cell_7": {
 			"type": "cell",
 			"cmap": {
 				"target id": "G3"
@@ -1378,7 +1378,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_8": {
+		"cell_8": {
 			"type": "cell",
 			"cmap": {
 				"target id": "A9"
@@ -1389,7 +1389,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_9": {
+		"cell_9": {
 			"type": "cell",
 			"cmap": {
 				"target id": "B9"
@@ -1400,7 +1400,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_10": {
+		"cell_10": {
 			"type": "cell",
 			"cmap": {
 				"target id": "C9"
@@ -1411,7 +1411,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_11": {
+		"cell_11": {
 			"type": "cell",
 			"cmap": {
 				"target id": "D9"
@@ -1422,7 +1422,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_12": {
+		"cell_12": {
 			"type": "cell",
 			"cmap": {
 				"target id": "E9"
@@ -1433,7 +1433,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_13": {
+		"cell_13": {
 			"type": "cell",
 			"cmap": {
 				"target id": "F9"
@@ -1444,7 +1444,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_14": {
+		"cell_14": {
 			"type": "cell",
 			"cmap": {
 				"target id": "G9"
@@ -1455,7 +1455,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_15": {
+		"cell_15": {
 			"type": "cell",
 			"cmap": {
 				"target id": "A20"
@@ -1466,7 +1466,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_16": {
+		"cell_16": {
 			"type": "cell",
 			"cmap": {
 				"target id": "B20"
@@ -1477,7 +1477,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_17": {
+		"cell_17": {
 			"type": "cell",
 			"cmap": {
 				"target id": "C20"
@@ -1488,7 +1488,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_18": {
+		"cell_18": {
 			"type": "cell",
 			"cmap": {
 				"target id": "D20"
@@ -1499,7 +1499,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_19": {
+		"cell_19": {
 			"type": "cell",
 			"cmap": {
 				"target id": "E20"
@@ -1510,7 +1510,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_20": {
+		"cell_20": {
 			"type": "cell",
 			"cmap": {
 				"target id": "F20"
@@ -1521,7 +1521,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_21": {
+		"cell_21": {
 			"type": "cell",
 			"cmap": {
 				"target id": "G20"
@@ -1532,7 +1532,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_22": {
+		"cell_22": {
 			"type": "cell",
 			"cmap": {
 				"target id": "A48"
@@ -1543,7 +1543,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_23": {
+		"cell_23": {
 			"type": "cell",
 			"cmap": {
 				"target id": "B48"
@@ -1554,7 +1554,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_24": {
+		"cell_24": {
 			"type": "cell",
 			"cmap": {
 				"target id": "C48"
@@ -1565,7 +1565,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_25": {
+		"cell_25": {
 			"type": "cell",
 			"cmap": {
 				"target id": "D48"
@@ -1576,7 +1576,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_26": {
+		"cell_26": {
 			"type": "cell",
 			"cmap": {
 				"target id": "E48"
@@ -1587,7 +1587,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_27": {
+		"cell_27": {
 			"type": "cell",
 			"cmap": {
 				"target id": "F48"
@@ -1598,7 +1598,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "cell_28": {
+		"cell_28": {
 			"type": "cell",
 			"cmap": {
 				"target id": "G48"
@@ -1609,7 +1609,7 @@
 			},
 			"part of": ["sheet_1"]
 		},
-        "unknown_1": {
+		"unknown_1": {
 			"type": "unknown",
 			"cmap": {
 				"target tag name": "input",
@@ -1617,11 +1617,11 @@
 				"target name": "single line"
 			},
 			"vmap": {
-                "content": "Patricia"
-            },
+				"content": "Patricia"
+			},
 			"part of": ["website_1"]
 		},
-        "unknown_2": {
+		"unknown_2": {
 			"type": "unknown",
 			"cmap": {
 				"target tag name": "input",
@@ -1629,12 +1629,12 @@
 				"target name": "single line"
 			},
 			"vmap": {
-                "content": "Pinneau",
+				"content": "Pinneau",
 				"target value": "Patricia"
-            },
+			},
 			"part of": ["website_1"]
 		},
-        "unknown_3": {
+		"unknown_3": {
 			"type": "unknown",
 			"cmap": {
 				"target id": "Date-date",
@@ -1643,11 +1643,11 @@
 				"target name": "date"
 			},
 			"vmap": {
-                "content": "1998-03-26 00:00:00"
-            },
+				"content": "1998-03-26 00:00:00"
+			},
 			"part of": ["website_1"]
 		},
-        "unknown_4": {
+		"unknown_4": {
 			"type": "unknown",
 			"cmap": {
 				"target id": "phone number",
@@ -1656,11 +1656,11 @@
 				"target name": "countrycode"
 			},
 			"vmap": {
-                "content": "+61 042 912 9323"
-            },
+				"content": "+61 042 912 9323"
+			},
 			"part of": ["website_1"]
 		},
-        "unknown_5": {
+		"unknown_5": {
 			"type": "unknown",
 			"cmap": {
 				"target tag name": "input",
@@ -1668,11 +1668,11 @@
 				"target name": "email"
 			},
 			"vmap": {
-                "content": "ppinneau@gmail.com"
-            },
+				"content": "ppinneau@gmail.com"
+			},
 			"part of": ["website_1"]
 		},
-        "unknown_6": {
+		"unknown_6": {
 			"type": "unknown",
 			"cmap": {
 				"target tag name": "input",
@@ -1680,11 +1680,11 @@
 				"target name": "SingleLine1"
 			},
 			"vmap": {
-                "content": "France"
-            },
+				"content": "France"
+			},
 			"part of": ["website_1"]
 		},
-        "unknown_7": {
+		"unknown_7": {
 			"type": "unknown",
 			"cmap": {
 				"target tag name": "input",
@@ -1692,11 +1692,11 @@
 				"target name": "Address_AddressLine1"
 			},
 			"vmap": {
-                "content": "143 Nicholson Street, Carlton, VIC 3067, Australia"
-            },
+				"content": "143 Nicholson Street, Carlton, VIC 3067, Australia"
+			},
 			"part of": ["website_1"]
 		},
-        "unknown_8": {
+		"unknown_8": {
 			"type": "unknown",
 			"cmap": {
 				"target tag name": "input",
@@ -1704,11 +1704,11 @@
 				"target name": "address city"
 			},
 			"vmap": {
-                "content": "143 Nicholson Street, Carlton, VIC 3067, Australia"
-            },
+				"content": "143 Nicholson Street, Carlton, VIC 3067, Australia"
+			},
 			"part of": ["website_1"]
 		},
-        "unknown_9": {
+		"unknown_9": {
 			"type": "unknown",
 			"cmap": {
 				"target tag name": "input",
@@ -1716,11 +1716,11 @@
 				"target name": "address region"
 			},
 			"vmap": {
-                "content": "143 Nicholson Street, Carlton, VIC 3067, Australia"
-            },
+				"content": "143 Nicholson Street, Carlton, VIC 3067, Australia"
+			},
 			"part of": ["website_1"]
 		},
-        "unknown_10": {
+		"unknown_10": {
 			"type": "unknown",
 			"cmap": {
 				"target tag name": "input",
@@ -1728,11 +1728,11 @@
 				"target name": "address zip code"
 			},
 			"vmap": {
-                "content": "143 Nicholson Street, Carlton, VIC 3067, Australia"
-            },
+				"content": "143 Nicholson Street, Carlton, VIC 3067, Australia"
+			},
 			"part of": ["website_1"]
 		},
-        "field_1": {
+		"field_1": {
 			"type": "field",
 			"cmap": {
 				"target tag name": "input",
@@ -1744,20 +1744,20 @@
 			},
 			"part of": ["website_1"]
 		},
-        "field_2": {
+		"field_2": {
 			"type": "field",
 			"cmap": {
-                "target id": "Date-date",
+				"target id": "Date-date",
 				"target tag name": "input",
 				"target type": "text",
 				"target name": "date"
-            },
+			},
 			"vmap": {
 				"target value": "1998-03-26 00:00:00"
 			},
 			"part of": ["website_1"]
 		},
-        "field_3": {
+		"field_3": {
 			"type": "field",
 			"cmap": {
 				"target id": "phone number",
@@ -1770,7 +1770,7 @@
 			},
 			"part of": ["website_1"]
 		},
-        "field_4": {
+		"field_4": {
 			"type": "field",
 			"cmap": {
 				"target tag name": "input",
@@ -1782,7 +1782,7 @@
 			},
 			"part of": ["website_1"]
 		},
-        "field_5": {
+		"field_5": {
 			"type": "field",
 			"cmap": {
 				"target tag name": "input",
@@ -1850,7 +1850,9 @@
 				"target inner text": "submit",
 				"target inner html": "\\n<em>Submit</em>\\n"
 			},
-			"vmap": {"target value": "submit"},
+			"vmap": {
+				"target value": "submit"
+			},
 			"part of": ["website_1"]
 		},
 		"checkbox_1": {
@@ -1862,11 +1864,13 @@
 				"target name": "decision box",
 				"target checked": "True"
 			},
-			"vmap": {"target value": "on"},
+			"vmap": {
+				"target value": "on"
+			},
 			"part of": ["website_1"]
 
 		}
-    },
+	},
 	"process_objects": {
 		"user_1": {
 			"type": "user",
@@ -1874,20 +1878,20 @@
 				"user id": "vleno"
 			}
 		},
-        "student_1": {
+		"student_1": {
 			"type": "student",
 			"amap": {
 				"firstname": "Albert",
-                "lastname": "Rauf",
-                "date": "1986-04-11",
-                "phone number": "+61 043 512 4834",
+				"lastname": "Rauf",
+				"date": "1986-04-11",
+				"phone number": "+61 043 512 4834",
 				"countrycode": "043-512-4834",
-                "email": "arauf@gmail.com",
-                "country": "Germany",
-                "Address_AddressLine1": "99 Beacon Rd",
-                "address city": "Port Melbourne",
-                "address region": "VIC",
-                "address zip code": "3207",
+				"email": "arauf@gmail.com",
+				"country": "Germany",
+				"Address_AddressLine1": "99 Beacon Rd",
+				"address city": "Port Melbourne",
+				"address region": "VIC",
+				"address zip code": "3207",
 				"address country": "Australia"
 			}
 		},
@@ -1895,16 +1899,16 @@
 			"type": "student",
 			"amap": {
 				"firstname": "Andrea",
-                "lastname": "Bolzano",
-                "date": "1989-07-22",
-                "phone number": "+61 031 023 0066",
+				"lastname": "Bolzano",
+				"date": "1989-07-22",
+				"phone number": "+61 031 023 0066",
 				"countrycode": "031-023-0066",
-                "email": "abolzano@gmail.com",
-                "country": "Italy",
-                "Address_AddressLine1": "463 Victoria St",
-                "address city": "West Melbourne",
-                "address region": "VIC",
-                "address zip code": "3003",
+				"email": "abolzano@gmail.com",
+				"country": "Italy",
+				"Address_AddressLine1": "463 Victoria St",
+				"address city": "West Melbourne",
+				"address region": "VIC",
+				"address zip code": "3003",
 				"address country": "Australia"
 			}
 		},
@@ -1912,16 +1916,16 @@
 			"type": "student",
 			"amap": {
 				"firstname": "Amelia",
-                "lastname": "Wilson",
-                "date": "1993-06-25",
-                "phone number": "+61 035 349 4724",
+				"lastname": "Wilson",
+				"date": "1993-06-25",
+				"phone number": "+61 035 349 4724",
 				"countrycode": "035-349-4724",
-                "email": "awilson@gmail.com",
-                "country": "Australia",
-                "Address_AddressLine1": "117 Farrell St",
-                "address city": "Port Melbourne",
-                "address region": "VIC",
-                "address zip code": "3207",
+				"email": "awilson@gmail.com",
+				"country": "Australia",
+				"Address_AddressLine1": "117 Farrell St",
+				"address city": "Port Melbourne",
+				"address region": "VIC",
+				"address zip code": "3207",
 				"address country": "Australia"
 			}
 		},
@@ -1929,16 +1933,16 @@
 			"type": "student",
 			"amap": {
 				"firstname": "Patricia",
-                "lastname": "Pinneau",
-                "date": "1998-03-26",
-                "phone number": "+61 042 912 9323",
+				"lastname": "Pinneau",
+				"date": "1998-03-26",
+				"phone number": "+61 042 912 9323",
 				"countrycode": "042-912-9323",
-                "email": "abolzano@gmail.com",
-                "country": "Italy",
-                "Address_AddressLine1": "143 Nicholson Street",
-                "address city": "Carlton",
-                "address region": "VIC",
-                "address zip code": "3067",
+				"email": "abolzano@gmail.com",
+				"country": "Italy",
+				"Address_AddressLine1": "143 Nicholson Street",
+				"address city": "Carlton",
+				"address region": "VIC",
+				"address zip code": "3067",
 				"address country": "Australia"
 			}
 		}

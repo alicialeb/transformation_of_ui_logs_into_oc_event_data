@@ -315,7 +315,7 @@
     "application_2": {
       "type": "application", 
       "cmap": {
-        "browser": "Microsoft Edge"
+        "browser": "Safari"
       },
       "vmap": {},
       "part of": []

@@ -9,7 +9,6 @@ from tkinter import filedialog as fd
 import re
 import nltk
 from nltk.corpus import wordnet
-from nltk.tag import pos_tag
 import copy
 import json
 
@@ -354,13 +353,13 @@ def find_event_column(log, ratio_dictionary, action_labels, ratio_threshold):
     return log
 
 
-# TODO: list comparison to separate activity and object type
-def extract_activity(log, event_column_index):
+def extract_activity(log, event_column_index, action_labels):
     """
     Splits events into their activities and object types.
 
     :param log: A pandas DataFrame representing the UI log.
     :param event_column_index: Column index of the event column.
+    :param action_labels: DataFrame with action labels.
     :return: Modified log with the event column split into an activity and a main ui object type column.
     """
     # rename column
@@ -371,12 +370,76 @@ def extract_activity(log, event_column_index):
 
     # if there is only one word included, assume it is the activity
     if len(split_results.columns) == 1:
-        log.insert(1, 'activity', split_results[0])
+        log.insert(1, 'activity', split_results[0]) #figure our how to address tuple in list/col
+
+    elif len(split_results.columns) > 3:
+        raise ValueError("An event column should not have more than three words as a value. Please adjust your log.")
 
     # if the event consists of only two parts assume the first word is the activity and the second one the object type
-    elif len(split_results.columns) == 2:
-        log.insert(1, 'activity', split_results[0])
-        log.insert(2, 'main ui object type', split_results[1])
+    else:
+        log.insert(1, 'activity', '')
+        log.insert(2, 'main ui object type', '')
+
+        for index, row in split_results.iterrows():
+            if len(split_results.columns) == 2:
+                if split_results.loc[index, 0] in action_labels['Action labels'].values:
+                    if is_dictionary_noun(split_results.loc[index, 1]):
+                        log.loc[index, 'activity'] = split_results.loc[index, 0]
+                        log.loc[index, 'main ui object type'] = split_results.loc[index, 1]
+                    # if no object is given
+                    elif not split_results.loc[index, 1]:
+                        log.loc[index, 'activity'] = split_results.loc[index, 0]
+                        log.loc[index, 'main ui object type'] = split_results.loc[index, 1]
+                    else:
+                        log.loc[index, 'activity'] = split_results.loc[index, 0] + ' ' + split_results.loc[
+                            index, 1]
+
+                elif split_results.loc[index, 1] in action_labels['Action labels'].values:
+                    if is_dictionary_noun(split_results.loc[index, 0]):
+                        log.loc[index, 'activity'] = split_results.loc[index, 1]
+                        log.loc[index, 'main ui object type'] = split_results.loc[index, 0]
+                    # if no object is given
+                    elif not split_results.loc[index, 0]:
+                        log.loc[index, 'activity'] = split_results.loc[index, 1]
+                        log.loc[index, 'main ui object type'] = split_results.loc[index, 0]
+                    else:
+                        log.loc[index, 'activity'] = split_results.loc[index, 1] + ' ' + split_results.loc[index, 0]
+                # else assume the activity comes first and is followed by the ui obj
+                else:
+                    log.loc[index, 'activity'] = split_results.loc[index, 0]
+                    log.loc[index, 'main ui object type'] = split_results.loc[index, 1]
+
+            elif len(split_results.columns) == 3:
+                if split_results.loc[index, 0] in action_labels['Action labels'].values:
+                    if is_dictionary_noun(split_results.loc[index, 2]):
+                        if is_dictionary_noun(split_results.loc[index, 1]):
+                            log.loc[index, 'activity'] = split_results.loc[index, 0]
+                            log.loc[index, 'main ui object type'] = split_results.loc[index, 1] + ' ' + split_results.loc[index, 2]
+                        else:
+                            log.loc[index, 'activity'] = split_results.loc[index, 0] + ' ' + split_results.loc[index, 1]
+                            log.loc[index, 'main ui object type'] = split_results.loc[index, 2]
+
+                if split_results.loc[index, 1] in action_labels['Action labels'].values:
+                    if is_dictionary_noun(split_results.loc[index, 0]):
+                        log.loc[index, 'activity'] = split_results.loc[index, 1] + ' ' + split_results.loc[index, 2]
+                        log.loc[index, 'main ui object type'] = split_results.loc[index, 0]
+                    elif is_dictionary_noun(split_results.loc[index, 0]):
+                        log.loc[index, 'activity'] = split_results.loc[index, 0] + ' ' + split_results.loc[index, 1]
+                        log.loc[index, 'main ui object type'] = split_results.loc[index, 2]
+
+                if split_results.loc[index, 2] in action_labels['Action labels'].values:
+                    if is_dictionary_noun(split_results.loc[index, 0]):
+                        if is_dictionary_noun(split_results.loc[index, 1]):
+                            log.loc[index, 'activity'] = split_results.loc[index, 2]
+                            log.loc[index, 'main ui object type'] = split_results.loc[index, 0] + ' ' + split_results.loc[index, 1]
+                        else:
+                            log.loc[index, 'activity'] = split_results.loc[index, 1] + ' ' + split_results.loc[index, 2]
+                            log.loc[index, 'main ui object type'] = split_results.loc[index, 0]
+
+                # else assume the activity comes first and is followed by the ui obj
+                else:
+                    log.loc[index, 'activity'] = split_results.loc[index, 0] + ' ' + split_results.loc[index, 1]
+                    log.loc[index, 'main ui object type'] = split_results.loc[index, 2]
 
     # drop the original event_column
     log = log.drop('event', axis=1)
@@ -734,7 +797,7 @@ def get_column_types(log, column_type_dictionary, column_indices, col_compl_dict
         elif ratio_dictionary[col] < threshold_cont_att:
             column_type_dictionary.setdefault(col, 'context attribute')
         # if there are many unique values it is likely that the column includes attribute values
-        elif ratio_dictionary[col] > threshold_val_att:
+        elif ratio_dictionary[col] >= threshold_val_att:
             column_type_dictionary.setdefault(col, 'value attribute')
 
         # ask user for column type
@@ -958,9 +1021,6 @@ def find_process_objects(log, cont_att_cols, process_obj_df, excluded_words):
                 str(new_value).strip()
 
             stem_value = nltk.stem.WordNetLemmatizer().lemmatize(str(new_value))
-
-            tagged_words = pos_tag([stem_value])
-            pos = tagged_words[0][1]
 
             if is_dictionary_noun(stem_value) and value not in excluded_words:
                 if value not in process_obj_list:

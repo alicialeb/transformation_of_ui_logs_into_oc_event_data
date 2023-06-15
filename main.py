@@ -8,7 +8,6 @@ from functions import *
 import sys
 import os
 
-# TODO: optimize thresholds
 # retrieve command-line arguments
 args = sys.argv[1:]
 
@@ -54,8 +53,8 @@ elif file_path.endswith('.csv'):
 else:
     raise ValueError("Unsupported file format. Please choose a file of type csv, xls, or xlsx instead.")
 
-#log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\example_ui_log.xlsx',  dtype=str)
-
+# log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\example_ui_log.xlsx',  dtype=str)
+#
 # log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\student_record.xlsx',  dtype=str)
 #
 # threshold_ui_obj = 0.15  # for ui object columns
@@ -67,7 +66,8 @@ else:
 
 # import action label list as DataFrame taken from https://carbondesignsystem.com/guidelines/content/action-labels/ and
 # supplemented with own ideas (confirm, login)
-action_labels = pd.read_csv(r'C:\Users\Besitzer\Documents\GitHub\master_thesis\Datasets\action_labels.csv')
+action_label_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'datasets', 'action_labels.csv')
+action_labels = pd.read_csv(action_label_path)
 # </editor-fold>
 
 
@@ -168,7 +168,7 @@ uniqueness_ratio_dictionary = get_unique_value_ratio(log)
 log = find_event_column(log, uniqueness_ratio_dictionary, action_labels, threshold_act)
 
 # call function to separate the activities from the object types in the events
-log = extract_activity(log, 0)
+log = extract_activity(log, 0, action_labels)
 
 # updated the uniqueness-ration dictionary since the columns changed
 uniqueness_ratio_dictionary = get_unique_value_ratio(log)

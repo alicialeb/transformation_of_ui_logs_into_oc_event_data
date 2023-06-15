@@ -373,7 +373,7 @@
 		"application_2": {
 			"type": "application",
 			"cmap": {
-				"browser": "Microsoft Edge"
+				"browser": "safari"
 			},
 			"vmap": {},
 			"part of": []
