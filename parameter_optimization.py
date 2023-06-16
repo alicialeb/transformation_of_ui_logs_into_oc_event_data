@@ -7,10 +7,9 @@ threshold_ranges = {
     'threshold_ui_obj': (0.1, 0.8, 0.1),
     'threshold_act': (0.1, 0.8, 0.1),
     'threshold_att': (0.1, 0.8, 0.1),
-    'threshold_compl': (0.8, 1.1, 0.1)
+    'threshold_compl': (1.0, 1.1, 0.1)
 }
 
-best_f1_score = 0.0
 f1_scores = []
 
 # Iterate through all threshold combinations
@@ -24,7 +23,7 @@ for threshold_ui_obj in np.arange(*threshold_ranges['threshold_ui_obj']):
                     command = [
                         'python',
                         'main.py',
-                        'login_ui_log.xlsx',
+                        'student_record.xlsx',
                         str(threshold_ui_obj),
                         str(threshold_act),
                         str(threshold_att),
@@ -64,6 +63,3 @@ df_f1_scores = df_f1_scores[['threshold_ui_obj', 'threshold_act', 'threshold_att
 
 # save the F1 scores to an Excel file
 df_f1_scores.to_excel('evaluation results/f1_scores_parameter_optimization.xlsx', index=False)
-
-# print the best F1 score and corresponding threshold combination
-print("Best F1 Score:", best_f1_score)

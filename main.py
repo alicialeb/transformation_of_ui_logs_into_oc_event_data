@@ -20,12 +20,12 @@ if len(args) == 1:
         raise ValueError("Invalid file path provided. Please choose a file of type csv, xls, or xlsx instead.")
 
     # use default parameter values
-    threshold_ui_obj = 0.15  # for ui object columns
+    threshold_ui_obj = 0.2  # for ui object columns
     threshold_act = 0.2  # for activity columns
     threshold_cont_att = 0.5  # for context attribute columns
     threshold_val_att = threshold_cont_att  # for value attribute columns
     threshold_timestamp = 1  # for timestamp column
-    threshold_compl = 0.95  # determines how complete a column should be
+    threshold_compl = 0.9  # determines how complete a column should be
 
 # if parameters are handed over, assign them to the ration thresholds determining the ratio of unique values a column should hold
 elif len(args) == 6:
@@ -41,8 +41,8 @@ else:
     print("Usage: python main.py [<file_path> <threshold_ui_object> <threshold_activity> <threshold_attribute> <threshold_timestamp> <threshold_col_completeness>]")
     sys.exit(1)
 
-# handle specific file paths "login_ui_log.xlsx" or "student_record.csv"
-if file_path == "login_ui_log.xlsx" or file_path == "student_record.csv":
+# handle specific file paths "login_ui_log.xlsx" or "student_record.xlsx"
+if file_path == "login_ui_log.xlsx" or file_path == "student_record.xlsx":
     file_path = os.path.join(os.path.dirname(__file__), "input datasets", file_path)
 
 # check if the file format is correct
@@ -57,12 +57,12 @@ else:
 #
 # log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\input datasets\student_record.xlsx',  dtype=str)
 #
-# threshold_ui_obj = 0.15  # for ui object columns
+# threshold_ui_obj = 0.2  # for ui object columns
 # threshold_act = 0.2  # for activity columns
-# threshold_cont_att = 0.55  # for context attribute columns
-# threshold_val_att = threshold_cont_att # for value attribute columns
+# threshold_cont_att = 0.5  # for context attribute columns
+# threshold_val_att = threshold_cont_att  # for value attribute columns
 # threshold_timestamp = 1  # for timestamp column
-# threshold_compl = 0.95  # determines how complete a column should be
+# threshold_compl = 0.9  # determines how complete a column should be
 
 # import action label list as DataFrame taken from https://carbondesignsystem.com/guidelines/content/action-labels/ and
 # supplemented with own ideas

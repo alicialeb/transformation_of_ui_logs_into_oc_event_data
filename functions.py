@@ -3,7 +3,6 @@
 
 # <editor-fold desc="Imports">
 import os
-
 import pandas as pd
 import numpy as np
 import tkinter as tk
@@ -2286,7 +2285,7 @@ def merge_dicts_and_create_json(events_dict, ui_obj_dict, process_obj_dict):
     subfolder = 'output automated transformation'
 
     # specify file path for the JSON file in the subfolder
-    json_file_path = os.path.join(subfolder, 'oc_login_ui_log.json')
+    json_file_path = os.path.join(subfolder, 'oc_student_record.json')
 
     # write the dictionary to the JSON file
     with open(json_file_path, 'w') as f:

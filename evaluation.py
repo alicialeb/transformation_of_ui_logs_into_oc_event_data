@@ -948,14 +948,14 @@ def calculate_scores(json_truth, json_auto, id_dict):
 
 def get_log_micro_f1():
     # read the contents of the JSON files
-    with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\ground truth files\json_login.json', 'r') as file1:
+    with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\ground truth files\json_student_record.json', 'r') as file1:
         json_truth = file1.read()
 
-    with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\output automated transformation\oc_login_ui_log.json', 'r') as file2:
+    with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\output automated transformation\oc_student_record.json', 'r') as file2:
         json_auto = file2.read()
 
     try:
-        log_micro_f1 = calculate_scores(json_truth, json_auto, id_dict_login_ui_log)
+        log_micro_f1 = calculate_scores(json_truth, json_auto, id_dict_student_record)
     except KeyError:
         log_micro_f1 = 0
 
