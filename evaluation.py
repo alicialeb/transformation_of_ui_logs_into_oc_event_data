@@ -2,7 +2,7 @@ import json
 import pandas as pd
 
 # <editor-fold desc="ID Dictionaries">
-id_dict_example_ui_log = {
+id_dict_login_ui_log = {
     "event_1": "event_1",
     "event_2": "event_2",
     "event_3": "event_3",
@@ -933,7 +933,7 @@ def calculate_scores(json_truth, json_auto, id_dict):
     #
     # # Create an Excel writer object
     #
-    # writer = pd.ExcelWriter('scores.xlsx', engine='xlsxwriter')
+    # writer = pd.ExcelWriter('evaluation results/scores.xlsx', engine='xlsxwriter')
     #
     # # Write each data frame to a separate sheet in the Excel file
     # log_scores_df.to_excel(writer, sheet_name='Log Scores', index=False, header=False)
@@ -948,15 +948,18 @@ def calculate_scores(json_truth, json_auto, id_dict):
 
 def get_log_micro_f1():
     # read the contents of the JSON files
-    with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\json_example.json', 'r') as file1:
+    with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\ground truth files\json_login.json', 'r') as file1:
         json_truth = file1.read()
 
-    with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\oc_example_ui_log.json', 'r') as file2:
+    with open(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\output automated transformation\oc_login_ui_log.json', 'r') as file2:
         json_auto = file2.read()
 
     try:
-        log_micro_f1 = calculate_scores(json_truth, json_auto, id_dict_example_ui_log)
+        log_micro_f1 = calculate_scores(json_truth, json_auto, id_dict_login_ui_log)
     except KeyError:
         log_micro_f1 = 0
 
     return log_micro_f1
+
+f1 = get_log_micro_f1()
+print(f1)

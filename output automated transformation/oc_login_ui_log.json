@@ -1,0 +1,484 @@
+{
+    "events": {
+        "event_1": {
+            "activity": "follow",
+            "timestamp": "2020-05-01 09:07:00",
+            "main object": "link_1",
+            "vmap": {},
+            "umap": [
+                "application_1"
+            ],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_2": {
+            "activity": "insert",
+            "timestamp": "2020-05-01 09:10:00",
+            "main object": "value_1",
+            "vmap": {
+                "value_1.value": "Yeee123"
+            },
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_3": {
+            "activity": "insert",
+            "timestamp": "2020-05-01 09:12:00",
+            "main object": "value_2",
+            "vmap": {
+                "value_2.value": "uih(jJHHL"
+            },
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_4": {
+            "activity": "click",
+            "timestamp": "2020-05-01 09:13:00",
+            "main object": "button_1",
+            "vmap": {},
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_5": {
+            "activity": "follow",
+            "timestamp": "2023-04-06 15:20:00",
+            "main object": "link_2",
+            "vmap": {},
+            "umap": [
+                "application_2"
+            ],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_6": {
+            "activity": "insert",
+            "timestamp": "2023-04-06 15:25:00",
+            "main object": "value_3",
+            "vmap": {
+                "value_3.value": "Hag_01"
+            },
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_7": {
+            "activity": "insert",
+            "timestamp": "2023-04-06 15:26:00",
+            "main object": "value_4",
+            "vmap": {
+                "value_4.value": "#HSkdljG_g"
+            },
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_8": {
+            "activity": "click",
+            "timestamp": "2023-04-06 15:28:00",
+            "main object": "button_2",
+            "vmap": {},
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_9": {
+            "activity": "follow",
+            "timestamp": "2022-06-01 20:09:00",
+            "main object": "link_1",
+            "vmap": {},
+            "umap": [
+                "application_3"
+            ],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_10": {
+            "activity": "insert",
+            "timestamp": "2022-06-01 20:11:00",
+            "main object": "value_1",
+            "vmap": {
+                "value_1.value": "Doja1987"
+            },
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_11": {
+            "activity": "insert",
+            "timestamp": "2022-06-01 20:15:00",
+            "main object": "value_2",
+            "vmap": {
+                "value_2.value": "HJadaK278,o"
+            },
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_12": {
+            "activity": "click",
+            "timestamp": "2022-06-01 20:16:00",
+            "main object": "button_1",
+            "vmap": {},
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_13": {
+            "activity": "follow",
+            "timestamp": "2023-07-19 11:55:00",
+            "main object": "link_1",
+            "vmap": {},
+            "umap": [
+                "application_3"
+            ],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_14": {
+            "activity": "insert",
+            "timestamp": "2023-07-19 11:56:00",
+            "main object": "value_1",
+            "vmap": {
+                "value_1.value": "123JoRo"
+            },
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_15": {
+            "activity": "insert",
+            "timestamp": "2023-07-19 11:58:00",
+            "main object": "value_2",
+            "vmap": {
+                "value_2.value": "sPalb5nla..2"
+            },
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_16": {
+            "activity": "click",
+            "timestamp": "2023-07-19 11:59:00",
+            "main object": "button_1",
+            "vmap": {},
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_17": {
+            "activity": "follow",
+            "timestamp": "2023-07-22 03:28:00",
+            "main object": "link_3",
+            "vmap": {},
+            "umap": [
+                "application_1"
+            ],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_18": {
+            "activity": "insert",
+            "timestamp": "2023-07-22 03:29:00",
+            "main object": "value_5",
+            "vmap": {
+                "value_5.value": "Amy*9"
+            },
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_19": {
+            "activity": "insert",
+            "timestamp": "2023-07-22 03:34:00",
+            "main object": "value_6",
+            "vmap": {
+                "value_6.value": "aApb6&lkjby"
+            },
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_20": {
+            "activity": "click",
+            "timestamp": "2023-07-22 03:40:00",
+            "main object": "button_3",
+            "vmap": {},
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_21": {
+            "activity": "follow",
+            "timestamp": "2023-07-22 17:12:00",
+            "main object": "link_1",
+            "vmap": {},
+            "umap": [
+                "application_1"
+            ],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_22": {
+            "activity": "insert",
+            "timestamp": "2023-07-22 17:17:00",
+            "main object": "value_1",
+            "vmap": {
+                "value_1.value": "Smithy245"
+            },
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_23": {
+            "activity": "insert",
+            "timestamp": "2023-07-22 17:18:00",
+            "main object": "value_2",
+            "vmap": {
+                "value_2.value": "*AjblgaJD)=M"
+            },
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_24": {
+            "activity": "click",
+            "timestamp": "2023-07-22 17:20:00",
+            "main object": "button_1",
+            "vmap": {},
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_25": {
+            "activity": "follow",
+            "timestamp": "2023-07-23 13:33:00",
+            "main object": "link_2",
+            "vmap": {},
+            "umap": [
+                "application_2"
+            ],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_26": {
+            "activity": "insert",
+            "timestamp": "2023-07-23 13:40:00",
+            "main object": "value_3",
+            "vmap": {
+                "value_3.value": "Kat-1999"
+            },
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_27": {
+            "activity": "insert",
+            "timestamp": "2023-07-23 13:41:00",
+            "main object": "value_4",
+            "vmap": {
+                "value_4.value": "Lalkj_?jGElk"
+            },
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        },
+        "event_28": {
+            "activity": "click",
+            "timestamp": "2023-07-23 13:42:00",
+            "main object": "button_2",
+            "vmap": {},
+            "umap": [],
+            "pmap": [
+                "user_1"
+            ]
+        }
+    },
+    "ui_objects": {
+        "link_3": {
+            "type": "link",
+            "cmap": {
+                "url": "www.example-website.com"
+            },
+            "vmap": {},
+            "part of": []
+        },
+        "value_5": {
+            "type": "value",
+            "cmap": {
+                "label": "username"
+            },
+            "vmap": {
+                "value": "Amy*9"
+            },
+            "part of": [
+                "link_3"
+            ]
+        },
+        "value_6": {
+            "type": "value",
+            "cmap": {
+                "label": "password"
+            },
+            "vmap": {
+                "value": "aApb6&lkjby"
+            },
+            "part of": [
+                "link_3"
+            ]
+        },
+        "button_3": {
+            "type": "button",
+            "cmap": {
+                "label": "login"
+            },
+            "vmap": {},
+            "part of": [
+                "link_3"
+            ]
+        },
+        "link_1": {
+            "type": "link",
+            "cmap": {
+                "url": "www.example.com"
+            },
+            "vmap": {},
+            "part of": []
+        },
+        "value_1": {
+            "type": "value",
+            "cmap": {
+                "label": "username"
+            },
+            "vmap": {
+                "value": "Smithy245"
+            },
+            "part of": [
+                "link_1"
+            ]
+        },
+        "value_2": {
+            "type": "value",
+            "cmap": {
+                "label": "password"
+            },
+            "vmap": {
+                "value": "*AjblgaJD)=M"
+            },
+            "part of": [
+                "link_1"
+            ]
+        },
+        "button_1": {
+            "type": "button",
+            "cmap": {
+                "label": "login"
+            },
+            "vmap": {},
+            "part of": [
+                "link_1"
+            ]
+        },
+        "link_2": {
+            "type": "link",
+            "cmap": {
+                "url": "www.website.com"
+            },
+            "vmap": {},
+            "part of": []
+        },
+        "value_3": {
+            "type": "value",
+            "cmap": {
+                "label": "username"
+            },
+            "vmap": {
+                "value": "Kat-1999"
+            },
+            "part of": [
+                "link_2"
+            ]
+        },
+        "value_4": {
+            "type": "value",
+            "cmap": {
+                "label": "password"
+            },
+            "vmap": {
+                "value": "Lalkj_?jGElk"
+            },
+            "part of": [
+                "link_2"
+            ]
+        },
+        "button_2": {
+            "type": "button",
+            "cmap": {
+                "label": "confirm"
+            },
+            "vmap": {},
+            "part of": [
+                "link_2"
+            ]
+        },
+        "application_1": {
+            "type": "application",
+            "cmap": {
+                "browser": "chrome"
+            },
+            "vmap": {},
+            "part of": []
+        },
+        "application_2": {
+            "type": "application",
+            "cmap": {
+                "browser": "safari"
+            },
+            "vmap": {},
+            "part of": []
+        },
+        "application_3": {
+            "type": "application",
+            "cmap": {
+                "browser": "opera"
+            },
+            "vmap": {},
+            "part of": []
+        }
+    },
+    "process_objects": {
+        "user_1": {
+            "type": "user",
+            "amap": {}
+        }
+    }
+}

@@ -41,9 +41,9 @@ else:
     print("Usage: python main.py [<file_path> <threshold_ui_object> <threshold_activity> <threshold_attribute> <threshold_timestamp> <threshold_col_completeness>]")
     sys.exit(1)
 
-# handle specific file paths "example_ui_log.xlsx" or "student_record.csv"
-if file_path == "example_ui_log.xlsx" or file_path == "student_record.csv":
-    file_path = os.path.join(os.path.dirname(__file__), "datasets", file_path)
+# handle specific file paths "login_ui_log.xlsx" or "student_record.csv"
+if file_path == "login_ui_log.xlsx" or file_path == "student_record.csv":
+    file_path = os.path.join(os.path.dirname(__file__), "input datasets", file_path)
 
 # check if the file format is correct
 if file_path.endswith('.xls') or file_path.endswith('.xlsx'):
@@ -53,9 +53,9 @@ elif file_path.endswith('.csv'):
 else:
     raise ValueError("Unsupported file format. Please choose a file of type csv, xls, or xlsx instead.")
 
-# log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\example_ui_log.xlsx',  dtype=str)
+# log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\input datasets\login_ui_log.xlsx',  dtype=str)
 #
-# log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\datasets\student_record.xlsx',  dtype=str)
+# log = pd.read_excel(r'C:\Users\Besitzer\Documents\Master\Thesis\Code\input datasets\student_record.xlsx',  dtype=str)
 #
 # threshold_ui_obj = 0.15  # for ui object columns
 # threshold_act = 0.2  # for activity columns
@@ -65,8 +65,8 @@ else:
 # threshold_compl = 0.95  # determines how complete a column should be
 
 # import action label list as DataFrame taken from https://carbondesignsystem.com/guidelines/content/action-labels/ and
-# supplemented with own ideas (confirm, login)
-action_label_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'datasets', 'action_labels.csv')
+# supplemented with own ideas
+action_label_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources', 'action_labels.csv')
 action_labels = pd.read_csv(action_label_path)
 # </editor-fold>
 

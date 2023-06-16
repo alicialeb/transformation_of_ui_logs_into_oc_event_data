@@ -2,6 +2,8 @@
 # coding: utf-8
 
 # <editor-fold desc="Imports">
+import os
+
 import pandas as pd
 import numpy as np
 import tkinter as tk
@@ -2280,8 +2282,14 @@ def merge_dicts_and_create_json(events_dict, ui_obj_dict, process_obj_dict):
     oc_dict.setdefault('ui_objects', ui_obj_dict) # add UI object dictionary
     oc_dict.setdefault('process_objects', process_obj_dict) # add process object dictionary
 
-    # create a new json file and write the dictionary to the file
-    with open('oc_example_ui_log.json', 'w') as f:
-        json.dump(oc_dict, f)
+    # specify the subfolder name
+    subfolder = 'output automated transformation'
+
+    # specify file path for the JSON file in the subfolder
+    json_file_path = os.path.join(subfolder, 'oc_login_ui_log.json')
+
+    # write the dictionary to the JSON file
+    with open(json_file_path, 'w') as f:
+        json.dump(oc_dict, f, indent=4)
 # </editor-fold>
 
