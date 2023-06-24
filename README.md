@@ -9,9 +9,7 @@ The project is tested for python 3.8.
 2. Install the necessary dependencies with the following command:
    pip install -r requirements.txt
 3. Run the application with the following command:
-   ```python
-python main.py [<file_path> <threshold_ui_object> <threshold_activity> <threshold_attribute> <threshold_timestamp> <threshold_col_completeness>]
-```   
+  `python main.py [<file_path> <threshold_ui_object> <threshold_activity> <threshold_attribute> <threshold_timestamp> <threshold_col_completeness>]`
 
 ## Parameters 
 All thresholds are optional. Thresholds should range between 0.0 and 1.0. If no thresholds are given, the default thresholds are used: 
