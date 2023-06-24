@@ -28,7 +28,7 @@ Threshold explanation:
 - threshold_timestamp: defines a threshold to ensure the uniqueness of timestamp columns. A column can only be classified as a timestamp if its uniqueness ratio meets or exceeds the specified threshold. 
 - threshold_col_completeness: helps to determine the main UI object type column. A column can only be of type main UI object type if the completeness ratio of the column is greater than the set threshold.
 
-# UI Log Requirements
+## UI Log Requirements
 - The events in the UI log are ordered chronologically, starting with the oldest event.
 - Each UI log has a column that contains the main UI object type.
 - Each UI log has a column that contains the activity or event.
