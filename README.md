@@ -12,7 +12,7 @@ The project is tested for python 3.8.
    python main.py [<file_path> <threshold_ui_object> <threshold_activity> <threshold_attribute> <threshold_timestamp> <threshld_col_completeness>]   
 
 ## Parameters 
-All thresholds are optional. Thresholds should range between 0.0 and 1.0. If no thresholds are given, the default thresholds are used. 
+All thresholds are optional. Thresholds should range between 0.0 and 1.0. If no thresholds are given, the default thresholds are used: 
 - threshold_ui_object: 0.2
 - threshold_activity: 0.2
 - threshold_attribute: 0.5
