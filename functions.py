@@ -2285,7 +2285,7 @@ def merge_dicts_and_create_json(events_dict, ui_obj_dict, process_obj_dict):
     subfolder = 'output automated transformation'
 
     # specify file path for the JSON file in the subfolder
-    json_file_path = os.path.join(subfolder, 'oc_student_record.json')
+    json_file_path = os.path.join(subfolder, 'oc_log.json')
 
     # write the dictionary to the JSON file
     with open(json_file_path, 'w') as f:
