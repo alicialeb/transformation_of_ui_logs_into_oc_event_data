@@ -34,5 +34,5 @@ Threshold explanation:
 
 ## UI Log Requirements
 - The events in the UI log are ordered chronologically, starting with the oldest event.
-- Each UI log has a column that contains the main UI object type.
-- Each UI log has a column that contains the activity or event.
+- Each UI log has exactly one column that contains the main UI object type.
+- Each UI log has exactly one column that contains the activity or event.
