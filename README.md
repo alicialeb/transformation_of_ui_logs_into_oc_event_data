@@ -7,9 +7,14 @@ The project is tested for python 3.8.
 ## Installation 
 1. Clone the project and navigate to the root folder of the project.
 2. Install the necessary dependencies with the following command:
-   pip install -r requirements.txt
-3. Run the application with the following command:
+   `pip install -r requirements.txt`
+3. Install wordnet with the following commands:
+   `$ python`
+   `>>> import nltk`
+   `>>> nltk.download(‘wordnet’)`
+4. Run the application with the following command:
   `python main.py [<file_path> <threshold_ui_object> <threshold_activity> <threshold_attribute> <threshold_timestamp> <threshold_col_completeness>]`
+5. Find the resulting object-centric UI log 'oc_log.json' in the 'output automated transformation'-folder within the root folder of the project.
 
 ## Parameters 
 All thresholds are optional. Thresholds should range between 0.0 and 1.0. If no thresholds are given, the default thresholds are used: 
@@ -30,5 +35,5 @@ Threshold explanation:
 
 ## UI Log Requirements
 - The events in the UI log are ordered chronologically, starting with the oldest event.
-- Each UI log has a column that contains the main UI object type.
-- Each UI log has a column that contains the activity or event.
+- Each UI log has exactly one column that contains the main UI object type.
+- Each UI log has exactly one column that contains the activity or event.
