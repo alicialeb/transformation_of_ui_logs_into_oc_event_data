@@ -7,7 +7,7 @@ The project is tested for python 3.8.
 ## Installation 
 1. Clone the project and navigate to the root folder of the project.
 2. Install the necessary dependencies with the following command:
-   pip install -r requirements.txt
+   `pip install -r requirements.txt`
 3. Run the application with the following command:
   `python main.py [<file_path> <threshold_ui_object> <threshold_activity> <threshold_attribute> <threshold_timestamp> <threshold_col_completeness>]`
 
